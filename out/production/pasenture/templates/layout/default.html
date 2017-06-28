@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0 user-scalable=no"/>
+    <title>Default Title</title>
+    <link href="webjars/materializecss/0.96.0/css/materialize.css" type="text/css" rel="stylesheet" media="screen,projection"/>
+    <link href="https://fonts.googleapis.com/earlyaccess/hanna.css" rel="stylesheet" type="text/css" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+    <script src="webjars/jquery/2.1.4/jquery.js"></script>
+    <script src="webjars/materializecss/0.96.0/js/materialize.js"></script>
+    <style type="text/css">
+        html{font-family: 'Hanna', sans-serif;}
+        p{margin-top: 10px; margin-bottom: 10px}
+
+        .form-container {
+            min-height: 200px;
+        }
+        #contents{
+            column-width: 300px;
+            column-gap: 10px;
+            padding-right: 5px;
+            padding-left: 5px;
+            /*display: inline-block;*/
+        }
+
+        #contents figure{
+            display: inline-block;
+            border:1px solid rgba(0,0,0,0.2);
+            margin:0;
+            margin-bottom: 15px;
+            padding:10px;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.5);;
+        }
+        #contents figure figcaption{
+            border-top:1px solid rgba(0,0,0,0.2);
+            padding:10px;
+            margin-top:11px;
+        }
+
+
+    </style>
+</head>
+
+<body>
+<ui id="menu-dropdown" class="dropdown-content" style="width:200px">
+    <li id="uploadPage"><a href="/upload" class="indigo-text">업로드</a></li>
+    <li class="divider"></li>
+    <li id="searchPage"><a href="/search" class="indigo-text">사진보기</a></li>
+    <li class="divider"></li>
+    <li id="mapPage"><a href="#" class="indigo-text">지도로보기(준비중)</a></li>
+    <li class="divider"></li>
+    <li id="aiPage"><a href="#" class="indigo-text">AI연구소(준비중)</a></li>
+</ui>
+<nav>
+    <div class="nav-wrapper light-blue lighten-2">
+        <ul class="left" style="width:200px">
+            <li style="width:200px"><a class="dropdown-button" href="#!" data-activates="menu-dropdown"><i class="mdi-action-subject"></i></a></li>
+        </ul>
+    </div>
+</nav>
+
+<section layout:fragment="content">
+    <p>Page content goes here</p>
+</section>
+
+<figure style="display: none" id="contentsFigure">
+    <img src="" style="width:100%; min-width:300px;"/>
+    <figcaption>
+        <p><i class="material-icons left">today</i><span id="createdDate">YYYY/MM/DD XXX</span></p>
+        <p><i class="material-icons left">schedule</i><span id="createdTime">HH:mm:ss</span></p>
+        <p><i class="material-icons left">room</i><span id="position">장소 정보 없음</span></p>
+        <p><i class="material-icons left">comment</i><span id="memo">메모정보없음</span></p>
+    </figcaption>
+</figure>
+<script type="text/javascript">
+    $(".dropdown-button").dropdown({
+        width: 200,
+        constrainWidth: true
+        }
+    );
+    $(document).ready(function () {
+        $('#mapPage').on('click',function () {
+            alert("준비중입니다.");
+        });
+        $('#aiPage').on('click',function () {
+            alert("준비중입니다.");
+        })
+    })
+</script>
+</body>
+</html>

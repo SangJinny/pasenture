@@ -1,0 +1,82 @@
+buildscript {
+	ext {
+		springBootVersion = '1.5.3.RELEASE'
+		springCloudVersion = '1.2.0.RELEASE'
+	}
+	repositories {
+		mavenCentral()
+	}
+	dependencies {
+		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+		classpath("io.spring.gradle:dependency-management-plugin:0.5.1.RELEASE")
+	}
+}
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'war'
+apply plugin: 'idea'
+//apply plugin: 'jar'
+
+sourceCompatibility = 1.8
+
+
+repositories {
+	mavenCentral()
+}
+
+
+springBoot {
+	executable = true
+
+
+}
+
+
+jar{
+	manifest {
+		attributes  'Title': 'pasenture', 'Version': 0.1, 'Main-Class': 'com.pasenture.PasentureApplication'
+	}
+	//archiveName 'pasenture_snapshot.jar'
+	dependsOn configurations.runtime
+	from {
+		configurations.compile.collect {it.isDirectory()? it: zipTree(it)}
+	}
+}
+
+/*war{
+	baseName = 'pasenture'
+}*/
+/*
+idea {
+	module {
+		inheritOutputDirs = false
+		outputDir = file("$buildDir/classes/main/")
+	}
+}
+*/
+dependencies {
+	compile('org.springframework.boot:spring-boot-starter-web')
+	compile('org.springframework.boot:spring-boot-starter-thymeleaf') // thymeleaf 의존성 추가
+	compile('org.springframework.boot:spring-boot-starter-data-jpa')
+	//compile('org.springframework.data.web.config.SpringDataJacksonModules')
+	compile('org.springframework:springloaded:1.2.6.RELEASE')
+	compile("org.springframework.cloud:spring-cloud-aws-jdbc:${springCloudVersion}")
+	compile("org.springframework.cloud:spring-cloud-aws-context:${springCloudVersion}")
+	compile("org.springframework.cloud:spring-cloud-aws-autoconfigure:${springCloudVersion}")
+
+	//compile('org.springframework.data:spring-data-jpa:1.11.3.RELEASE')
+    //compile("com.amazonaws:aws-java-sdk:${springCloudVersion}")
+	compile("commons-io:commons-io:2.4")
+	compile('org.webjars:materializecss:0.96.0')
+	compile('org.webjars:jquery:2.1.4')
+	compile ('mysql:mysql-connector-java:5.1.42')
+	compile('com.drewnoakes:metadata-extractor:2.7.2') // 파일 메타데이터 추출 라이브러리
+	//complie('net.coobird:thumbnailator:0.4.8') // 썸네일 생성 라이브러리
+	compile 'net.coobird:thumbnailator:0.4.8'
+	//compile('org.hibernate:hibernate-jpamodelgen:1.2.0.Final') // JPA 메타모델생성
+	compile('com.fasterxml.jackson.datatype:jackson-datatype-jsr310') // Date 클래스의 적절한 직렬화
+	providedRuntime('org.springframework.boot:spring-boot-starter-tomcat')
+	testCompile('org.springframework.boot:spring-boot-starter-test')
+}
