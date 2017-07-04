@@ -11,13 +11,13 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 @EnableJpaRepositories
 @SpringBootApplication
 public class PasentureApplication extends SpringBootServletInitializer{
-/*
+
 	@Override
 	protected SpringApplicationBuilder configure (SpringApplicationBuilder applicationBuilder) {
 
 		return applicationBuilder.sources(PasentureApplication.class);
 	}
-*/
+
 	public static void main(String[] args) {
 		SpringApplication.run(PasentureApplication.class, args);
 	}

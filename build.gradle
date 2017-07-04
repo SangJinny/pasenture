@@ -45,9 +45,9 @@ jar{
 	}
 }
 
-/*war{
+war{
 	baseName = 'pasenture'
-}*/
+}
 /*
 idea {
 	module {
