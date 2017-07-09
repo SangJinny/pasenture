@@ -6,6 +6,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -37,4 +39,13 @@ public class ImageController {
 
         imageService.inquireFile(key, response);
     }
+
+    @RequestMapping(value = "/details", method = RequestMethod.GET)
+    public ModelAndView detailsPage(@RequestParam String key, HttpServletResponse response) {
+
+        FileInfo fileInfo = imageService.selectOne(key);
+        ModelAndView mav =new ModelAndView("detailsPage","FileInfo", fileInfo);
+        return mav;
+    }
+
 }

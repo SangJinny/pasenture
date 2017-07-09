@@ -73,6 +73,7 @@ dependencies {
 	compile('org.webjars:jquery:2.1.4')
 	compile ('mysql:mysql-connector-java:5.1.42')
 	compile('com.drewnoakes:metadata-extractor:2.7.2') // 파일 메타데이터 추출 라이브러리
+	compile('com.googlecode.json-simple:json-simple:1.1.1') // JSON String 파싱관련.
 	//complie('net.coobird:thumbnailator:0.4.8') // 썸네일 생성 라이브러리
 	compile 'net.coobird:thumbnailator:0.4.8'
 	//compile('org.hibernate:hibernate-jpamodelgen:1.2.0.Final') // JPA 메타모델생성

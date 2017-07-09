@@ -31,7 +31,7 @@ public class ImageApiController {
     private ImageService imageService;
 
     @RequestMapping(value = "/upload", method = RequestMethod.POST)
-    public ResponseEntity upload(MultipartFile[] files) throws ParseException, ImageProcessingException, IOException {
+    public ResponseEntity upload(MultipartFile[] files) throws ParseException, ImageProcessingException, IOException, org.json.simple.parser.ParseException {
 
         HttpStatus status = HttpStatus.CREATED;
         imageService.upload(files);

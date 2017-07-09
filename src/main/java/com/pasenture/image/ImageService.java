@@ -2,21 +2,19 @@ package com.pasenture.image;
 
 
 import com.amazonaws.AmazonClientException;
-import com.amazonaws.auth.profile.ProfileCredentialsProvider;
-import com.amazonaws.event.*;
 import com.amazonaws.event.ProgressEvent;
 import com.amazonaws.event.ProgressListener;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.services.s3.model.*;
+import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.transfer.TransferManager;
 import com.amazonaws.services.s3.transfer.Upload;
 import com.drew.imaging.ImageMetadataReader;
 import com.drew.imaging.ImageProcessingException;
 import com.drew.lang.GeoLocation;
-import com.drew.metadata.*;
+import com.drew.metadata.Metadata;
 import com.drew.metadata.exif.ExifSubIFDDirectory;
 import com.drew.metadata.exif.GpsDirectory;
+import com.pasenture.map.MapService;
 import com.pasenture.module.CommonFunction;
 import net.coobird.thumbnailator.Thumbnails;
 import org.apache.commons.io.IOUtils;
@@ -35,15 +33,15 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletResponse;
 import java.awt.image.BufferedImage;
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.*;
+import java.util.Date;
+import java.util.List;
 
 /**
  * Created by Jeon on 2017-05-07.
@@ -63,6 +61,9 @@ public class ImageService {
     @Autowired
     private CommonFunction commonFunction;
 
+    @Autowired
+    private MapService mapService;
+
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
 
@@ -75,7 +76,7 @@ public class ImageService {
     // 1. MultipartFile -> File 변환
     // 2. 메타데이터 처리 후 RDS에 업로드
     // 3. 파일을 S3에 업로드
-    public void upload(MultipartFile[] multipartFiles) throws IOException, ImageProcessingException, ParseException {
+    public void upload(MultipartFile[] multipartFiles) throws IOException, ImageProcessingException, ParseException, org.json.simple.parser.ParseException {
         for(MultipartFile multipartFile : multipartFiles) {
 
             if(multipartFile != null &&
@@ -162,7 +163,7 @@ public class ImageService {
     }
 
     // RDS에 파일 메타정보를 INSERT
-    private FileInfo uploadOnRDS (File file) throws IOException, ImageProcessingException, ParseException {
+    private FileInfo uploadOnRDS (File file) throws IOException, ImageProcessingException, ParseException, org.json.simple.parser.ParseException {
 
         FileInfo fileInfo = extractFileInfo(file);
         System.out.println("INSERT!!: "+fileInfo.toString());
@@ -179,7 +180,12 @@ public class ImageService {
         return fileInfoList;
     }
 
-    private FileInfo extractFileInfo (File file) throws ImageProcessingException, IOException, ParseException {
+    public FileInfo selectOne (String key) {
+
+        return fileInfoRepository.getOne(key);
+    }
+
+    private FileInfo extractFileInfo (File file) throws ImageProcessingException, IOException, ParseException, org.json.simple.parser.ParseException {
 
         Metadata metadata = ImageMetadataReader.readMetadata(file);
         FileInfo fileinfo = new FileInfo(file.getName());
@@ -195,7 +201,7 @@ public class ImageService {
             SimpleDateFormat dateFormat = new SimpleDateFormat("YYYY-MM-dd-HH:mm:ss");
             String createdDate = dateFormat.format(originalDate).substring(0,10);
             String createdTime = dateFormat.format(originalDate).substring(11);
-            String createdDay = commonFunction.getDateDay(createdDate, "YYYY-MM-dd");
+            String createdDay = commonFunction.getDateDay(createdDate, "YYYY-MM-DD");
 
             fileinfo.setCreatedDate(createdDate);
             fileinfo.setCreatedTime(createdTime);
@@ -209,7 +215,8 @@ public class ImageService {
             if(geoLocation != null && !geoLocation.isZero()) {
 
                 fileinfo.setLatitude(geoLocation.getLatitude());
-                fileinfo.setLatitude(geoLocation.getLongitude());
+                fileinfo.setLongitude(geoLocation.getLongitude());
+                fileinfo.setPosition(mapService.getAddrFromGPS(geoLocation.getLongitude(),geoLocation.getLatitude()));
             }
         }
 

@@ -13,6 +13,27 @@
         html{font-family: 'Hanna', sans-serif;}
         p{margin-top: 10px; margin-bottom: 10px}
 
+        #detail-container{
+            padding:10px;
+            border:1px solid rgba(0,0,0,0.2);
+            margin:0;
+            margin-bottom: 15px;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+        }
+        #detail-container img {
+            width: 100%;
+            max-height: 400px;
+            object-fit: cover;
+        }
+        .meta-info-container {
+            border-top:1px solid rgba(0,0,0,0.2);
+            padding:10px;
+            margin-top:11px;
+        }
+        .meta-info-container p {
+            margin-top: 15px;
+            margin-bottom: 15px
+        }
         .form-container {
             min-height: 200px;
         }
@@ -70,7 +91,7 @@
         <p><i class="material-icons left">today</i><span id="createdDate">YYYY/MM/DD XXX</span></p>
         <p><i class="material-icons left">schedule</i><span id="createdTime">HH:mm:ss</span></p>
         <p><i class="material-icons left">room</i><span id="position">장소 정보 없음</span></p>
-        <p><i class="material-icons left">comment</i><span id="memo">메모정보없음</span></p>
+        <!--<p><i class="material-icons left">comment</i><span id="memo">메모정보없음</span></p> -->
     </figcaption>
 </figure>
 <script type="text/javascript">

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorator="layout/default">
 <head lang="en">
-    <title>Profile Picture Upload</title>
+    <title>Search Your Images</title>
 </head>
 <body>
 <div class="row" layout:fragment="content">
@@ -78,7 +78,7 @@
                 newFigure.children("figcaption").children().children("#createdDate").text(fileInfo.createdDate+" "+fileInfo.createdDay);
                 newFigure.children("figcaption").children().children("#createdTime").text(fileInfo.createdTime);
                 newFigure.children("figcaption").children().children("#position").text(fileInfo.postion+" ");
-                newFigure.children("figcaption").children().children("#memo").text(fileInfo.memo+" ");
+                //newFigure.children("figcaption").children().children("#memo").text(fileInfo.memo+" ");
 
                 $("#contents").append(newFigure);
                 index++;
