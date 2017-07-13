@@ -32,6 +32,7 @@ public class FileInfo {
     private String createdDay ="";
     private double latitude =0.0;    // YPos
     private double longitude = 0.0;   // XPos
+    @Column(length = 300)
     private String position = "";
     @Column(length = 500)
     private String memo = "";

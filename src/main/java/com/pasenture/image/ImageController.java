@@ -40,7 +40,7 @@ public class ImageController {
         imageService.inquireFile(key, response);
     }
 
-    @RequestMapping(value = "/details", method = RequestMethod.GET)
+    @RequestMapping(value = "/details", method = RequestMethod.GET, produces = "application/json; charset=utf8")
     public ModelAndView detailsPage(@RequestParam String key, HttpServletResponse response) {
 
         FileInfo fileInfo = imageService.selectOne(key);
