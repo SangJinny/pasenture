@@ -41,6 +41,9 @@ public class MapService {
             resultAddr = mam.getAddrInfoFromJson(response.getBody());
         }
 
+        if(StringUtils.isEmpty(resultAddr)) {
+            resultAddr = "위치정보없음";
+        }
         return resultAddr;
     }
 }

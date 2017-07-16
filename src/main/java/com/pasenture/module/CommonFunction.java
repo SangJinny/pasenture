@@ -9,6 +9,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -77,14 +79,28 @@ public class CommonFunction {
         return file;
     }
 
+    /**
+     * @param file
+     * @return thumnail_file
+     * @throws IOException
+     */
     public File getThumbnailFromFile (File file) throws IOException {
 
         File thumbnail = new File(file.getName()+"_thumbnail");
         thumbnail.createNewFile();
         FileOutputStream fos = new FileOutputStream(thumbnail);
-        Thumbnails.of(file).scale(0.25).outputFormat("jpg").toOutputStream(fos);
+        Thumbnails.of(file).scale(0.15).outputFormat("jpg").toOutputStream(fos);
         fos.close();
 
         return thumbnail;
+    }
+
+    /**
+     * @return 오늘날짜(today, yyyy-MM-dd)
+     */
+    public String getTodayString () {
+
+        return LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+
     }
 }

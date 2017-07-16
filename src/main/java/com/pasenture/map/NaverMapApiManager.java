@@ -11,6 +11,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
 /**
@@ -58,6 +59,33 @@ public class NaverMapApiManager implements MapApiManager {
 
                     resultAddr = addrInfo.get("address").toString();
                 }
+            }
+
+            // 도로명주소가 나오지 않을 경우가 있다. 이럴경우 지번주소(행정구역)로 처리
+            if(StringUtils.isEmpty(resultAddr)) {
+
+                for(int i = 0 ; i < addrInfoArray.size() ; i++) {
+
+                    JSONObject addrInfo = (JSONObject) addrInfoArray.get(i);
+                    if(addrInfo.get("isAdmAddress").toString().equals("true")) {
+
+                        resultAddr = addrInfo.get("address").toString();
+                    }
+                }
+
+            }
+
+            // 그래도 없으면 아무거나.
+            if(StringUtils.isEmpty(resultAddr)) {
+
+                for(int i = 0 ; i < addrInfoArray.size() ; i++) {
+
+                    JSONObject addrInfo = (JSONObject) addrInfoArray.get(i);
+
+                    resultAddr = addrInfo.get("address").toString();
+
+                }
+
             }
         } catch (ParseException e) {
             e.printStackTrace();

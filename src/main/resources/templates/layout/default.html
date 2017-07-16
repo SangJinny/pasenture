@@ -13,6 +13,7 @@
         html{font-family: 'Hanna', sans-serif;}
         p{margin-top: 10px; margin-bottom: 10px}
 
+        /* for details page */
         #detail-container{
             padding:10px;
             border:1px solid rgba(0,0,0,0.2);
@@ -22,7 +23,6 @@
         }
         #detail-container img {
             width: 100%;
-            max-height: 400px;
             object-fit: cover;
         }
         .meta-info-container {
@@ -34,15 +34,122 @@
             margin-top: 15px;
             margin-bottom: 15px
         }
+
         .form-container {
             min-height: 200px;
         }
+
+        /* -------------------------
+         * for search page
+         *-------------------------*/
+        @media screen and (max-width: 250px){
+            #contents{
+                -webkit-column-count:1;
+                -moz-column-count:1;
+                column-count:1;
+                column-gap: 1px;
+            }
+            #contents figure figcaption p {
+                font-size:11px;
+            }
+            #contents figure{
+                padding:5px;
+            }
+        }
+        @media screen and (min-width: 251px) and (max-width: 600px){
+            #contents{
+                -webkit-column-count:2;
+                -moz-column-count:2;
+                column-count:2;
+                column-gap: 3px;
+
+            }
+            #contents figure figcaption p {
+                font-size:13px;
+            }
+            #contents figure{
+                padding:5px;
+            }
+            #contents figure img {
+                min-width:100px;
+            }
+        }
+        @media screen and (min-width: 601px) and (max-width: 900px){
+            #contents{
+                -webkit-column-count:3;
+                -moz-column-count:3;
+                column-count:3;
+                column-gap: 5px;
+
+            }
+            #contents figure figcaption p {
+                font-size:14px;
+            }
+            #contents figure{
+                padding:10px;
+            }
+            #contents figure img {
+                min-width:140px;
+            }
+        }
+        @media screen and (min-width: 901px) and (max-width: 1300px){
+            #contents{
+                -webkit-column-count:4;
+                -moz-column-count:4;
+                column-count:4;
+                column-gap: 10px;
+
+            }
+            #contents figure figcaption p {
+                font-size:14.5px;
+            }
+            #contents figure{
+                padding:10px;
+            }
+            #contents figure img {
+                min-width:190px;
+            }
+        }
+        @media screen and (min-width: 1301px) and (max-width: 1800px){
+            #contents{
+                -webkit-column-count:5;
+                -moz-column-count:5;
+                column-count:5;
+                column-gap: 10px;
+
+            }
+            #contents figure figcaption p {
+                font-size:15px;
+            }
+            #contents figure{
+                padding:10px;
+            }
+            #contents figure img {
+                min-width:230px;
+            }
+        }
+        @media screen and (min-width: 1801px){
+            #contents{
+                -webkit-column-count:6;
+                -moz-column-count:6;
+                column-count:6;
+                column-gap: 10px;
+
+            }
+            #contents figure figcaption p {
+                font-size:15px;
+            }
+            #contents figure{
+                padding:10px;
+            }
+            #contents figure img {
+                min-width:270px;
+            }
+        }
+
         #contents{
-            column-width: 300px;
-            column-gap: 10px;
             padding-right: 5px;
             padding-left: 5px;
-            /*display: inline-block;*/
         }
 
         #contents figure{
@@ -50,15 +157,22 @@
             border:1px solid rgba(0,0,0,0.2);
             margin:0;
             margin-bottom: 15px;
-            padding:10px;
-            box-shadow: 2px 2px 5px rgba(0,0,0,0.5);;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+        }
+        #contents figure img {
+            max-height: 350px;
+            object-fit: cover;
         }
         #contents figure figcaption{
             border-top:1px solid rgba(0,0,0,0.2);
-            padding:10px;
-            margin-top:11px;
+            padding:3px;
+            margin-top:5px;
         }
 
+        .row form {
+            margin-left: auto;
+            margin-right: auto;
+        }
 
     </style>
 </head>
@@ -86,10 +200,10 @@
 </section>
 
 <figure style="display: none" id="contentsFigure">
-    <img src="" style="width:100%; min-width:300px;"/>
+    <img src="" style="width:100%;"/>
     <figcaption>
         <p><i class="material-icons left">today</i><span id="createdDate">YYYY/MM/DD XXX</span></p>
-        <p><i class="material-icons left">schedule</i><span id="createdTime">HH:mm:ss</span></p>
+        <!--<p><i class="material-icons left">schedule</i><span id="createdTime">HH:mm:ss</span></p>-->
         <p><i class="material-icons left">room</i><span id="position">장소 정보 없음</span></p>
         <!--<p><i class="material-icons left">comment</i><span id="memo">메모정보없음</span></p> -->
     </figcaption>

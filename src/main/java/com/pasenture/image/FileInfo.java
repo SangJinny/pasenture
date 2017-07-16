@@ -20,20 +20,28 @@ public class FileInfo {
     @Column(nullable = false)
     private String fileName;
 
-
     private String thumbnailKey;
     private String modelName ="";
     private Date originalDate;
-    @Column(length = 10)
+
+    @Column(length = 20)
     private String createdDate ="";
-    @Column(length = 12)
+
+    @Column(length = 20)
     private String createdTime="";
-    @Column(length = 3)
+
+    @Column(length = 20)
     private String createdDay ="";
+
+    @Column(length = 20)
+    private String uploadedDate = "";
+
     private double latitude =0.0;    // YPos
     private double longitude = 0.0;   // XPos
+
     @Column(length = 300)
     private String position = "";
+
     @Column(length = 500)
     private String memo = "";
 
@@ -139,6 +147,13 @@ public class FileInfo {
 
     public void setCreatedDay(String createdDay) {
         this.createdDay = createdDay;
+    }
+    public String getUploadedDate() {
+        return uploadedDate;
+    }
+
+    public void setUploadedDate(String uploadedDate) {
+        this.uploadedDate = uploadedDate;
     }
 
     public double getLatitude() {

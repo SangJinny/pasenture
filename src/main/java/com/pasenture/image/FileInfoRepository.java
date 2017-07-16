@@ -20,4 +20,11 @@ public interface FileInfoRepository extends JpaRepository<FileInfo, String>, Jpa
 
    public List<FileInfo> findByCreatedDate (String createdDate);
 
+   public List<FileInfo> findByUploadedDate (String UploadedDate);
+
+   public List<FileInfo> findByCreatedDateBetween(String startDate, String endDate);
+
+   public List<FileInfo> findByUploadedDateBetween(String startDate, String endDate);
+
+   public List<FileInfo> findByPositionContaining (String address);
 }

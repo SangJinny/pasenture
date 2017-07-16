@@ -40,6 +40,7 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -87,7 +88,6 @@ public class ImageService {
                 File file = commonFunction.getFileFromMultipartFile(multipartFile);
                 FileInfo tempFileInfo = uploadOnRDS(file);
                 File thumbnailFile = commonFunction.getThumbnailFromFile(file);
-                System.out.println("########################"+thumbnailFile.getName());
                 uploadOnS3(tempFileInfo.getFileKey(), file);
                 uploadOnS3(tempFileInfo.getThumbnailKey(),thumbnailFile);
             }
@@ -172,11 +172,46 @@ public class ImageService {
         return fileInfo;
     }
 
-    public List<FileInfo> searchByDate (String dateString) throws ParseException {
-        //return fileInfoRepository.findAll();
+    public List<FileInfo> searchByDate (String targetDate, String divCode) throws ParseException {
 
-        List<FileInfo> fileInfoList = fileInfoRepository.findByCreatedDate(dateString);
-        //System.out.println(fileInfoList.get(0).toString());
+        List<FileInfo> fileInfoList = Collections.emptyList();
+        switch (divCode) {
+
+            // 찍은날짜기반
+            case "1":
+                fileInfoList = fileInfoRepository.findByCreatedDate(targetDate);
+                break;
+
+            // 업데이트날짜기반
+            case "2":
+                fileInfoList = fileInfoRepository.findByUploadedDate(targetDate);
+                break;
+        }
+        return fileInfoList;
+    }
+
+    public List<FileInfo> searchBetweenDates (String startDate, String endDate, String divCode) {
+
+        List<FileInfo> fileInfoList = Collections.emptyList();
+        switch (divCode) {
+
+            // 찍은날짜기반
+            case "1":
+                fileInfoList = fileInfoRepository.findByCreatedDateBetween(startDate, endDate);
+                break;
+
+            // 업데이트날짜기반
+            case "2":
+                fileInfoList = fileInfoRepository.findByUploadedDateBetween(startDate, endDate);
+                break;
+        }
+        return fileInfoList;
+    }
+
+    public List<FileInfo> searchLikeAddress (String address) {
+
+        List<FileInfo> fileInfoList = Collections.emptyList();
+        fileInfoList = fileInfoRepository.findByPositionContaining(address);
         return fileInfoList;
     }
 
@@ -195,17 +230,28 @@ public class ImageService {
         String modelName = exifSubIFDDirectory.getString(ExifSubIFDDirectory.TAG_LENS_MODEL);
 
         fileinfo.setOriginalDate(originalDate);
-        fileinfo.setModelName(modelName);
         if(originalDate != null) {
 
             SimpleDateFormat dateFormat = new SimpleDateFormat("YYYY-MM-dd-HH:mm:ss");
             String createdDate = dateFormat.format(originalDate).substring(0,10);
             String createdTime = dateFormat.format(originalDate).substring(11);
-            String createdDay = commonFunction.getDateDay(createdDate, "YYYY-MM-DD");
+            String createdDay = commonFunction.getDateDay(createdDate, "yyyy-MM-dd");
 
             fileinfo.setCreatedDate(createdDate);
             fileinfo.setCreatedTime(createdTime);
             fileinfo.setCreatedDay(createdDay);
+        } else {
+
+            fileinfo.setCreatedDate("날짜정보없음");
+            fileinfo.setCreatedTime("시간정보없음");
+            fileinfo.setCreatedDay("");
+        }
+        if(StringUtils.isEmpty(modelName)) {
+
+            fileinfo.setModelName("카메라정보없음");
+        } else {
+
+            fileinfo.setModelName(modelName);
         }
 
         GpsDirectory gpsDirectory = metadata.getDirectory(GpsDirectory.class);
@@ -218,62 +264,14 @@ public class ImageService {
                 fileinfo.setLongitude(geoLocation.getLongitude());
                 fileinfo.setPosition(mapService.getAddrFromGPS(geoLocation.getLongitude(),geoLocation.getLatitude()));
             }
+        } else {
+            fileinfo.setPosition("위치정보없음");
         }
 
+        fileinfo.setUploadedDate(commonFunction.getTodayString());
         return fileinfo;
     }
 
 
 
-    ///////////////////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////////////////////////////////////////////////////////////////////////////
-    /*
-    private PutObjectResult uploadOnS3(String filePath, String uploadKey) throws FileNotFoundException {
-        return uploadOnS3(new FileInputStream(filePath), uploadKey);
-    }
-
-    private PutObjectResult uploadOnS3(InputStream inputStream, String uploadKey) {
-        PutObjectRequest putObjectRequest = new PutObjectRequest(bucket, uploadKey, inputStream, new ObjectMetadata());
-        PutObjectResult putObjectResult = amazonS3Client.putObject(putObjectRequest);
-        IOUtils.closeQuietly(inputStream);
-        return putObjectResult;
-    }
-
-    private S3ObjectInputStream getFileOnStream (String key) {
-
-        GetObjectRequest getObjectRequest = new GetObjectRequest(bucket, key);
-        S3Object s3Object = amazonS3Client.getObject(getObjectRequest);
-        S3ObjectInputStream objectInputStream = s3Object.getObjectContent();
-        return objectInputStream;
-    }
-
-    public void inquire (String key, HttpServletResponse response) throws IOException {
-
-        S3ObjectInputStream objectInputStream = getFileOnStream(key);
-        IOUtils.copy(objectInputStream, response.getOutputStream());
-    }
-
-    public ResponseEntity<byte[]> download(String key) throws IOException {
-        S3ObjectInputStream objectInputStream = getFileOnStream(key);
-        byte[] bytes = IOUtils.toByteArray(objectInputStream);
-        String fileName = URLEncoder.encode(key, "UTF-8").replaceAll("\\+", "%20");
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-        httpHeaders.setContentLength(bytes.length);
-        httpHeaders.setContentDispositionFormData("attachment", fileName);
-        return new ResponseEntity<>(bytes, httpHeaders, HttpStatus.OK);
-    }
-
-
-
-    public List<S3ObjectSummary> list() {
-        ObjectListing objectListing = amazonS3Client.listObjects(new ListObjectsRequest().withBucketName(bucket));
-        List<S3ObjectSummary> s3ObjectSummaries = objectListing.getObjectSummaries();
-        return s3ObjectSummaries;
-    }
-    */
 }
