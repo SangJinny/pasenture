@@ -4,6 +4,8 @@ import net.coobird.thumbnailator.Thumbnails;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -84,12 +86,19 @@ public class CommonFunction {
      * @return thumnail_file
      * @throws IOException
      */
-    public File getThumbnailFromFile (File file) throws IOException {
+    public File getThumbnailFromFile (File file, int thumnailWidth) throws IOException {
 
+        BufferedImage bufferedImage = ImageIO.read(file);
+        int height = bufferedImage.getHeight();
+        int width = bufferedImage.getWidth();
+        double rate = (double) thumnailWidth/ width;
+
+        int thumnailHeight = (int)(height * rate);
         File thumbnail = new File(file.getName()+"_thumbnail");
         thumbnail.createNewFile();
         FileOutputStream fos = new FileOutputStream(thumbnail);
-        Thumbnails.of(file).scale(0.15).outputFormat("jpg").toOutputStream(fos);
+        Thumbnails.of(file).size(thumnailWidth, thumnailHeight).outputFormat("jpg").toOutputStream(fos);
+        //Thumbnails.of(file).scale(0.15).outputFormat("jpg").toOutputStream(fos);
         fos.close();
 
         return thumbnail;

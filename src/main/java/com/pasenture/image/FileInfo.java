@@ -17,6 +17,7 @@ public class FileInfo {
 
     @Column(nullable = false)
     private String fileType;
+
     @Column(nullable = false)
     private String fileName;
 
@@ -38,9 +39,15 @@ public class FileInfo {
 
     private double latitude =0.0;    // YPos
     private double longitude = 0.0;   // XPos
-
+/*
     @Column(length = 300)
     private String position = "";
+*/
+    @Column(length = 300)
+    private String roadAddress = "";
+
+    @Column(length = 300)
+    private String parcelAddress = "";
 
     @Column(length = 500)
     private String memo = "";
@@ -72,7 +79,7 @@ public class FileInfo {
 
         return new String("FileInfo[key="+fileKey+", fileType="+fileType+", fileName="
                 +fileName+", modelName="+modelName+", originalDate="+originalDate+", latitude(Ypos)="
-                +latitude+", longitude(Xpos)="+longitude+", position="+position+"+, memo="+memo+"]");
+                +latitude+", longitude(Xpos)="+longitude+", memo="+memo+"]");
 
     }
 
@@ -172,12 +179,28 @@ public class FileInfo {
         this.longitude = longitude;
     }
 
-    public String getPosition() {
+/*    public String getPosition() {
         return position;
     }
 
     public void setPosition(String position) {
         this.position = position;
+    }*/
+
+    public String getRoadAddress() {
+        return roadAddress;
+    }
+
+    public void setRoadAddress(String roadAddress) {
+        this.roadAddress = roadAddress;
+    }
+
+    public String getParcelAddress() {
+        return parcelAddress;
+    }
+
+    public void setParcelAddress(String parselAddress) {
+        this.parcelAddress = parselAddress;
     }
 
     public String getMemo() {

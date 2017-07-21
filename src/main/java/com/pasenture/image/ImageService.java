@@ -87,7 +87,7 @@ public class ImageService {
 
                 File file = commonFunction.getFileFromMultipartFile(multipartFile);
                 FileInfo tempFileInfo = uploadOnRDS(file);
-                File thumbnailFile = commonFunction.getThumbnailFromFile(file);
+                File thumbnailFile = commonFunction.getThumbnailFromFile(file, 300);
                 uploadOnS3(tempFileInfo.getFileKey(), file);
                 uploadOnS3(tempFileInfo.getThumbnailKey(),thumbnailFile);
             }
@@ -107,7 +107,7 @@ public class ImageService {
             public void progressChanged(ProgressEvent progressEvent) {
 
                 double progress = progressEvent.getBytes() != 0 ? progressEvent.getBytesTransferred() / progressEvent.getBytes()*100 : 0.0;
-                System.out.println("FileName: "+fileName+" / Progress: "+progress+"%");
+                //System.out.println("FileName: "+fileName+" / Progress: "+progress+"%");
             }
         });
 
@@ -211,7 +211,8 @@ public class ImageService {
     public List<FileInfo> searchLikeAddress (String address) {
 
         List<FileInfo> fileInfoList = Collections.emptyList();
-        fileInfoList = fileInfoRepository.findByPositionContaining(address);
+        fileInfoList = fileInfoRepository.
+                findByRoadAddressContainingOrParcelAddressContaining(address, address);
         return fileInfoList;
     }
 
@@ -262,10 +263,9 @@ public class ImageService {
 
                 fileinfo.setLatitude(geoLocation.getLatitude());
                 fileinfo.setLongitude(geoLocation.getLongitude());
-                fileinfo.setPosition(mapService.getAddrFromGPS(geoLocation.getLongitude(),geoLocation.getLatitude()));
+                fileinfo.setRoadAddress(mapService.getRoadAddrFromGPS(geoLocation.getLongitude(),geoLocation.getLatitude()));
+                fileinfo.setParcelAddress(mapService.getParcelAddrFromGPS(geoLocation.getLongitude(),geoLocation.getLatitude()));
             }
-        } else {
-            fileinfo.setPosition("위치정보없음");
         }
 
         fileinfo.setUploadedDate(commonFunction.getTodayString());

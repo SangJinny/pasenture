@@ -27,7 +27,7 @@ public class MapService {
     @Autowired
     MapApiManager mam;
 
-    public String getAddrFromGPS(double xPos, double yPos) {
+    public String getRoadAddrFromGPS(double xPos, double yPos) {
 
         //MapApiManager mam = new NaverMapApiManager();
         ResponseEntity<String> response = mam.getGpsToAddrJsonResult(xPos, yPos);
@@ -38,7 +38,27 @@ public class MapService {
         if(response.getStatusCode() == HttpStatus.OK &&
                 !StringUtils.isEmpty(response.getBody())) {
 
-            resultAddr = mam.getAddrInfoFromJson(response.getBody());
+            resultAddr = mam.getRoadAddrInfoFromJson(response.getBody());
+        }
+
+        if(StringUtils.isEmpty(resultAddr)) {
+            resultAddr = "위치정보없음";
+        }
+        return resultAddr;
+    }
+
+    public String getParcelAddrFromGPS(double xPos, double yPos) {
+
+        //MapApiManager mam = new NaverMapApiManager();
+        ResponseEntity<String> response = mam.getGpsToAddrJsonResult(xPos, yPos);
+
+        String resultAddr = "";
+
+        // 추후 오류처리가 필요하면 추가하자
+        if(response.getStatusCode() == HttpStatus.OK &&
+                !StringUtils.isEmpty(response.getBody())) {
+
+            resultAddr = mam.getParcelAddrInfoFromJson(response.getBody());
         }
 
         if(StringUtils.isEmpty(resultAddr)) {

@@ -9,5 +9,6 @@ import org.springframework.web.client.RestTemplate;
 public interface MapApiManager {
 
     public ResponseEntity<String> getGpsToAddrJsonResult(double xPos, double yPos);
-    public String getAddrInfoFromJson(String Json);
+    public String getRoadAddrInfoFromJson(String Json);
+    public String getParcelAddrInfoFromJson(String Json);
 }

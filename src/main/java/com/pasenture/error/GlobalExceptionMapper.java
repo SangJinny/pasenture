@@ -21,8 +21,9 @@ public class GlobalExceptionMapper {
     protected ResponseEntity<?> handleIOException(Exception ex) {
 
         String msg = "파일 업로드/다운로드 중 오류가 발생했습니다.";
-        System.out.println("#$#$#####################"+msg);
+        ex.printStackTrace();
         return  new ResponseEntity<Exception>(ex,HttpStatus.INTERNAL_SERVER_ERROR);
+
     }
 
 }

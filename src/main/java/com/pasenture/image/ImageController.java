@@ -22,6 +22,12 @@ public class ImageController {
     @Autowired
     private ImageService imageService;
 
+    @RequestMapping(value="/", method = RequestMethod.GET)
+    public String mainPage() throws IOException {
+
+        return "searchPage";
+    }
+
     @RequestMapping(value = "/upload", method = RequestMethod.GET)
     public String uploadPage() {
 

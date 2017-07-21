@@ -41,11 +41,11 @@ public class NaverMapApiManager implements MapApiManager {
     }
 
     @Override
-    public String getAddrInfoFromJson(String Json) {
+    public String getRoadAddrInfoFromJson(String Json) {
 
         String resultAddr = "";
 
-        try {
+            try {
             JSONParser jsonParser = new JSONParser();
             JSONObject jsonObject = (JSONObject) jsonParser.parse(Json);
             JSONObject result = (JSONObject) jsonObject.get("result");
@@ -61,13 +61,42 @@ public class NaverMapApiManager implements MapApiManager {
                 }
             }
 
-            // 도로명주소가 나오지 않을 경우가 있다. 이럴경우 지번주소(행정구역)로 처리
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        return resultAddr;
+    }
+
+    @Override
+    public String getParcelAddrInfoFromJson(String Json) {
+        String resultAddr = "";
+
+        try {
+            JSONParser jsonParser = new JSONParser();
+            JSONObject jsonObject = (JSONObject) jsonParser.parse(Json);
+            JSONObject result = (JSONObject) jsonObject.get("result");
+            JSONArray addrInfoArray = (JSONArray) result.get("items");
+
+            for(int i = 0 ; i < addrInfoArray.size() ; i++) {
+
+                JSONObject addrInfo = (JSONObject) addrInfoArray.get(i);
+                // 도로명 주소가 아니고, 행정구역 지번주소임.
+                if(addrInfo.get("isRoadAddress").toString().equals("false") &&
+                        addrInfo.get("isAdmAddress").toString().equals("true")) {
+
+                    resultAddr = addrInfo.get("address").toString();
+                }
+            }
+
+            // 없으면 비행정지번주소로 처리.
             if(StringUtils.isEmpty(resultAddr)) {
 
                 for(int i = 0 ; i < addrInfoArray.size() ; i++) {
 
                     JSONObject addrInfo = (JSONObject) addrInfoArray.get(i);
-                    if(addrInfo.get("isAdmAddress").toString().equals("true")) {
+                    if(addrInfo.get("isRoadAddress").toString().equals("false") &&
+                            addrInfo.get("isAdmAddress").toString().equals("false")) {
 
                         resultAddr = addrInfo.get("address").toString();
                     }
@@ -75,18 +104,6 @@ public class NaverMapApiManager implements MapApiManager {
 
             }
 
-            // 그래도 없으면 아무거나.
-            if(StringUtils.isEmpty(resultAddr)) {
-
-                for(int i = 0 ; i < addrInfoArray.size() ; i++) {
-
-                    JSONObject addrInfo = (JSONObject) addrInfoArray.get(i);
-
-                    resultAddr = addrInfo.get("address").toString();
-
-                }
-
-            }
         } catch (ParseException e) {
             e.printStackTrace();
         }
