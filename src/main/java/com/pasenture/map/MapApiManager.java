@@ -1,5 +1,6 @@
 package com.pasenture.map;
 
+import com.pasenture.error.PasentureException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
@@ -8,7 +9,7 @@ import org.springframework.web.client.RestTemplate;
  */
 public interface MapApiManager {
 
-    public ResponseEntity<String> getGpsToAddrJsonResult(double xPos, double yPos);
-    public String getRoadAddrInfoFromJson(String Json);
-    public String getParcelAddrInfoFromJson(String Json);
+    public ResponseEntity<String> getGpsToAddrJsonResult(double xPos, double yPos) throws PasentureException;
+    public String getRoadAddrInfoFromJson(String Json) throws PasentureException;
+    public String getParcelAddrInfoFromJson(String Json) throws PasentureException;
 }

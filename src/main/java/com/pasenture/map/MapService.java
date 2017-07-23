@@ -1,6 +1,7 @@
 package com.pasenture.map;
 
 
+import com.pasenture.error.PasentureException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -27,7 +28,7 @@ public class MapService {
     @Autowired
     MapApiManager mam;
 
-    public String getRoadAddrFromGPS(double xPos, double yPos) {
+    public String getRoadAddrFromGPS(double xPos, double yPos) throws PasentureException {
 
         //MapApiManager mam = new NaverMapApiManager();
         ResponseEntity<String> response = mam.getGpsToAddrJsonResult(xPos, yPos);
@@ -47,7 +48,7 @@ public class MapService {
         return resultAddr;
     }
 
-    public String getParcelAddrFromGPS(double xPos, double yPos) {
+    public String getParcelAddrFromGPS(double xPos, double yPos) throws PasentureException {
 
         //MapApiManager mam = new NaverMapApiManager();
         ResponseEntity<String> response = mam.getGpsToAddrJsonResult(xPos, yPos);

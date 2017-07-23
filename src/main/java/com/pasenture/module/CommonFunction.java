@@ -1,5 +1,6 @@
 package com.pasenture.module;
 
+import com.pasenture.error.PasentureException;
 import net.coobird.thumbnailator.Thumbnails;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -28,11 +29,19 @@ public class CommonFunction {
      * @return String
      * @throws ParseException
      */
-    public String getDateDay(String date, String dateType) throws ParseException {
+    public String getDateDay(String date, String dateType) throws PasentureException {
 
         String day = "" ;
         SimpleDateFormat dateFormat = new SimpleDateFormat(dateType) ;
-        Date nDate = dateFormat.parse(date) ;
+        Date nDate = null;
+
+        try {
+            nDate = dateFormat.parse(date);
+        } catch (ParseException e) {
+            e.printStackTrace();
+            throw new PasentureException("요일 계산 도중 오류가 발생했습니다.");
+        }
+
         Calendar cal = Calendar.getInstance() ;
         cal.setTime(nDate);
 
@@ -70,13 +79,18 @@ public class CommonFunction {
      * @return File
      * @throws IOException
      */
-    public File getFileFromMultipartFile (MultipartFile multipartFile) throws IOException {
+    public File getFileFromMultipartFile (MultipartFile multipartFile) throws PasentureException {
 
         File file = new File(multipartFile.getOriginalFilename());
-        file.createNewFile();
-        FileOutputStream fos = new FileOutputStream(file);
-        fos.write(multipartFile.getBytes());
-        fos.close();
+        try {
+            file.createNewFile();
+            FileOutputStream fos = new FileOutputStream(file);
+            fos.write(multipartFile.getBytes());
+            fos.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new PasentureException("파일 변환 처리 도중 오류가 발생했습니다.");
+        }
 
         return file;
     }
@@ -86,20 +100,26 @@ public class CommonFunction {
      * @return thumnail_file
      * @throws IOException
      */
-    public File getThumbnailFromFile (File file, int thumnailWidth) throws IOException {
+    public File getThumbnailFromFile (File file, int thumnailWidth) throws PasentureException {
 
-        BufferedImage bufferedImage = ImageIO.read(file);
-        int height = bufferedImage.getHeight();
-        int width = bufferedImage.getWidth();
-        double rate = (double) thumnailWidth/ width;
-
-        int thumnailHeight = (int)(height * rate);
         File thumbnail = new File(file.getName()+"_thumbnail");
-        thumbnail.createNewFile();
-        FileOutputStream fos = new FileOutputStream(thumbnail);
-        Thumbnails.of(file).size(thumnailWidth, thumnailHeight).outputFormat("jpg").toOutputStream(fos);
-        //Thumbnails.of(file).scale(0.15).outputFormat("jpg").toOutputStream(fos);
-        fos.close();
+
+        try {
+            BufferedImage bufferedImage = ImageIO.read(file);
+            int height = bufferedImage.getHeight();
+            int width = bufferedImage.getWidth();
+            double rate = (double) thumnailWidth/ width;
+
+            int thumnailHeight = (int)(height * rate);
+            thumbnail.createNewFile();
+            FileOutputStream fos = new FileOutputStream(thumbnail);
+            Thumbnails.of(file).size(thumnailWidth, thumnailHeight).outputFormat("jpg").toOutputStream(fos);
+            //Thumbnails.of(file).scale(0.15).outputFormat("jpg").toOutputStream(fos);
+            fos.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new PasentureException("이미지 리사이징 도중 오류가 발생했습니다.");
+        }
 
         return thumbnail;
     }

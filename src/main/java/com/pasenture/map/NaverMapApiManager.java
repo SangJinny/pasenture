@@ -1,5 +1,6 @@
 package com.pasenture.map;
 
+import com.pasenture.error.PasentureException;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -41,7 +42,7 @@ public class NaverMapApiManager implements MapApiManager {
     }
 
     @Override
-    public String getRoadAddrInfoFromJson(String Json) {
+    public String getRoadAddrInfoFromJson(String Json) throws PasentureException {
 
         String resultAddr = "";
 
@@ -63,13 +64,14 @@ public class NaverMapApiManager implements MapApiManager {
 
         } catch (ParseException e) {
             e.printStackTrace();
+            throw new PasentureException("네이버 주소 API 접속 오류");
         }
 
         return resultAddr;
     }
 
     @Override
-    public String getParcelAddrInfoFromJson(String Json) {
+    public String getParcelAddrInfoFromJson(String Json) throws PasentureException {
         String resultAddr = "";
 
         try {
@@ -106,6 +108,7 @@ public class NaverMapApiManager implements MapApiManager {
 
         } catch (ParseException e) {
             e.printStackTrace();
+            throw new PasentureException("네이버 주소 API 접속 오류");
         }
 
         return resultAddr;

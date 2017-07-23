@@ -4,6 +4,7 @@ import com.amazonaws.services.s3.model.PutObjectResult;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 
 import com.drew.imaging.ImageProcessingException;
+import com.pasenture.error.PasentureException;
 import com.pasenture.image.FileInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -33,7 +34,7 @@ public class ImageApiController {
     private ImageService imageService;
 
     @RequestMapping(value = "/upload", method = RequestMethod.POST)
-    public ResponseEntity upload(MultipartFile[] files) throws ParseException, ImageProcessingException, IOException, org.json.simple.parser.ParseException {
+    public ResponseEntity upload(MultipartFile[] files) throws PasentureException {
 
         HttpStatus status = HttpStatus.CREATED;
         imageService.upload(files);
@@ -42,30 +43,46 @@ public class ImageApiController {
     }
 
     @RequestMapping(value = "/download", method = RequestMethod.GET)
-    public ResponseEntity<byte[]> download(@RequestParam String key) throws IOException {
+    public ResponseEntity<byte[]> download(@RequestParam String key) throws PasentureException {
         return imageService.downloadFile(key);
     }
 
     @RequestMapping(value ="/search/date", method = RequestMethod.GET ,produces = "application/json; charset=utf8")
-    public List<FileInfo> searchByDate(@RequestParam String divCode, @RequestParam String startDate,
-                                 @RequestParam String endDate, @RequestParam String address) throws ParseException {
+    public ResponseEntity<List<FileInfo>> searchByDate(@RequestParam String divCode, @RequestParam String startDate,
+                                 @RequestParam String endDate, @RequestParam String address) throws ParseException, PasentureException {
+
+        List<FileInfo> resultList= Collections.EMPTY_LIST;
 
         // 둘중 하나만 입력됐으면 단일날짜 입력으로 처리.
         if(StringUtils.isEmpty(endDate)) {
 
-            return imageService.searchByDate(startDate, divCode);
+            resultList = imageService.searchByDate(startDate, divCode);
         } else if (StringUtils.isEmpty(startDate)) {
 
-            return imageService.searchByDate(endDate, divCode);
+            resultList = imageService.searchByDate(endDate, divCode);
         }  else {
 
-            return imageService.searchBetweenDates(startDate, endDate, divCode);
+            resultList = imageService.searchBetweenDates(startDate, endDate, divCode);
         }
+
+        if(resultList.size() == 0) {
+
+            throw new PasentureException("조회 결과가 없습니다.");
+        }
+        return new ResponseEntity<List<FileInfo>>(resultList, HttpStatus.OK);
     }
 
     @RequestMapping(value = "/search/address", method = RequestMethod.GET, produces = "application/json; charset=utf8")
-    public List<FileInfo> searchByAddress (@RequestParam String address) {
+    public List<FileInfo> searchByAddress (@RequestParam String address) throws PasentureException {
 
-        return imageService.searchLikeAddress(address);
+        List<FileInfo> resultList= Collections.EMPTY_LIST;
+        resultList = imageService.searchLikeAddress(address);
+
+        if(resultList.size() == 0) {
+
+            throw new PasentureException("조회 결과가 없습니다.");
+        }
+
+        return resultList;
     }
 }

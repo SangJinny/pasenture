@@ -179,7 +179,7 @@
 
 <body>
 <ui id="menu-dropdown" class="dropdown-content" style="width:200px">
-    <li id="uploadPage"><a href="/upload" class="indigo-text">업로드</a></li>
+    <li id="uploadPage"><a href="#" class="indigo-text">업로드</a></li>
     <li class="divider"></li>
     <li id="searchPage"><a href="/search" class="indigo-text">사진보기</a></li>
     <li class="divider"></li>
@@ -215,6 +215,9 @@
         }
     );
     $(document).ready(function () {
+        $('#uploadPage').on('click',function () {
+            alert("임시로 중단된 기능입니다.");
+        });
         $('#mapPage').on('click',function () {
             alert("준비중입니다.");
         });

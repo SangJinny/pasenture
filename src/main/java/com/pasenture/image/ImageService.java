@@ -14,12 +14,14 @@ import com.drew.lang.GeoLocation;
 import com.drew.metadata.Metadata;
 import com.drew.metadata.exif.ExifSubIFDDirectory;
 import com.drew.metadata.exif.GpsDirectory;
+import com.pasenture.error.PasentureException;
 import com.pasenture.map.MapService;
 import com.pasenture.module.CommonFunction;
 import net.coobird.thumbnailator.Thumbnails;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.MessageSource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.http.HttpHeaders;
@@ -38,11 +40,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Created by Jeon on 2017-05-07.
@@ -68,7 +72,8 @@ public class ImageService {
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
 
-
+/*    @Autowired
+    private MessageSource messageSource;*/
 
     /*    @Autowired
         private AmazonS3Client amazonS3Client;*/
@@ -77,7 +82,21 @@ public class ImageService {
     // 1. MultipartFile -> File 변환
     // 2. 메타데이터 처리 후 RDS에 업로드
     // 3. 파일을 S3에 업로드
-    public void upload(MultipartFile[] multipartFiles) throws IOException, ImageProcessingException, ParseException, org.json.simple.parser.ParseException {
+    public void upload(MultipartFile[] multipartFiles) throws PasentureException {
+
+        // 업로드된 파일의 형식을 검증한다.
+        // 추후에 배열로 입력을 받지 않도록 개선하도록 하자.
+        for(MultipartFile file : multipartFiles) {
+
+            if(!file.getContentType().equals("image/jpeg") &&
+                    !file.getContentType().equals("image/jpg")) {
+
+                //throw new PasentureException(messageSource.getMessage("error.file.type.wrong", null, Locale.getDefault()));
+                throw new PasentureException("JPG 또는 JPEG파일만 업로드 가능합니다.");
+            }
+        }
+
+
         for(MultipartFile multipartFile : multipartFiles) {
 
             if(multipartFile != null &&
@@ -106,7 +125,8 @@ public class ImageService {
             @Override
             public void progressChanged(ProgressEvent progressEvent) {
 
-                double progress = progressEvent.getBytes() != 0 ? progressEvent.getBytesTransferred() / progressEvent.getBytes()*100 : 0.0;
+                double progress = progressEvent.getBytes() != 0 ?
+                        (double)progressEvent.getBytesTransferred() / (double)progressEvent.getBytes()*(double)100 : 0.0;
                 //System.out.println("FileName: "+fileName+" / Progress: "+progress+"%");
             }
         });
@@ -116,10 +136,11 @@ public class ImageService {
             // You can block and wait for the upload to finish
             upload.waitForCompletion();
         } catch (AmazonClientException amazonClientException) {
-            System.out.println("Unable to upload file, upload aborted.");
             amazonClientException.printStackTrace();
+            new PasentureException("이미지 서버 접속 도중 오류가 발생했습니다.");
         } catch (InterruptedException e) {
             e.printStackTrace();
+            new PasentureException("이미지 서버 접속 도중 오류가 발생했습니다.");
         }
     }
 
@@ -131,10 +152,18 @@ public class ImageService {
     }
 
     // InputStream에서 파일을 byte형태로 가져옴 (다운로드)
-    public ResponseEntity<byte[]> downloadFile (String fileName) throws IOException {
-        InputStream inputStream = getStreamOnS3(fileName);
-        byte[] bytes = IOUtils.toByteArray(inputStream);
-        String downloadFileName = URLEncoder.encode(fileName, "UTF-8").replaceAll("\\+", "%20");
+    public ResponseEntity<byte[]> downloadFile (String fileName) throws PasentureException {
+        InputStream inputStream = null;
+        byte[] bytes = null;
+        String downloadFileName = "";
+        try {
+            inputStream = getStreamOnS3(fileName);
+            bytes = IOUtils.toByteArray(inputStream);
+            downloadFileName = URLEncoder.encode(fileName, "UTF-8").replaceAll("\\+", "%20");
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new PasentureException("파일 다운로드 도중 오류가 발생했습니다.");
+        }
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_OCTET_STREAM);
         httpHeaders.setContentLength(bytes.length);
@@ -143,13 +172,19 @@ public class ImageService {
     }
 
     // InputStream의 파일을 HttpResponse에 넣음 (조회)
-    public void inquireFile (String fileName, HttpServletResponse response) throws IOException {
+    public void inquireFile (String fileName, HttpServletResponse response) throws PasentureException {
 
-        InputStream inputStream = getStreamOnS3(fileName);
-        IOUtils.copy(inputStream, response.getOutputStream());
+        InputStream inputStream = null;
+        try {
+            inputStream = getStreamOnS3(fileName);
+            IOUtils.copy(inputStream, response.getOutputStream());
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new PasentureException("파일 다운로드 도중 오류가 발생했습니다.");
+        }
     }
 
-    public void inquireThumbnailImage (String fileName, HttpServletResponse response) throws IOException {
+/*    public void inquireThumbnailImage (String fileName, HttpServletResponse response) throws IOException {
 
         //URL에서 이미지 파일을 읽음
         URL url = new URL("http://localhost:8080/uploadedImage/"+fileName);
@@ -160,13 +195,12 @@ public class ImageService {
                 .scale(0.25)
                 .outputFormat("jpg")
                 .toOutputStream(response.getOutputStream());
-    }
+    }*/
 
     // RDS에 파일 메타정보를 INSERT
-    private FileInfo uploadOnRDS (File file) throws IOException, ImageProcessingException, ParseException, org.json.simple.parser.ParseException {
+    private FileInfo uploadOnRDS (File file) throws PasentureException {
 
         FileInfo fileInfo = extractFileInfo(file);
-        System.out.println("INSERT!!: "+fileInfo.toString());
         fileInfoRepository.save(fileInfo);
 
         return fileInfo;
@@ -221,54 +255,65 @@ public class ImageService {
         return fileInfoRepository.getOne(key);
     }
 
-    private FileInfo extractFileInfo (File file) throws ImageProcessingException, IOException, ParseException, org.json.simple.parser.ParseException {
+    private FileInfo extractFileInfo (File file) throws PasentureException {
 
-        Metadata metadata = ImageMetadataReader.readMetadata(file);
         FileInfo fileinfo = new FileInfo(file.getName());
 
-        ExifSubIFDDirectory exifSubIFDDirectory = metadata.getDirectory(ExifSubIFDDirectory.class);
-        Date originalDate = exifSubIFDDirectory.getDate(ExifSubIFDDirectory.TAG_DATETIME_ORIGINAL);
-        String modelName = exifSubIFDDirectory.getString(ExifSubIFDDirectory.TAG_LENS_MODEL);
+        try {
 
-        fileinfo.setOriginalDate(originalDate);
-        if(originalDate != null) {
+            Metadata metadata = ImageMetadataReader.readMetadata(file);
+            ExifSubIFDDirectory exifSubIFDDirectory = metadata.getDirectory(ExifSubIFDDirectory.class);
+            Date originalDate = exifSubIFDDirectory.getDate(ExifSubIFDDirectory.TAG_DATETIME_ORIGINAL);
+            String modelName = exifSubIFDDirectory.getString(ExifSubIFDDirectory.TAG_LENS_MODEL);
 
-            SimpleDateFormat dateFormat = new SimpleDateFormat("YYYY-MM-dd-HH:mm:ss");
-            String createdDate = dateFormat.format(originalDate).substring(0,10);
-            String createdTime = dateFormat.format(originalDate).substring(11);
-            String createdDay = commonFunction.getDateDay(createdDate, "yyyy-MM-dd");
+            if(originalDate != null) {
 
-            fileinfo.setCreatedDate(createdDate);
-            fileinfo.setCreatedTime(createdTime);
-            fileinfo.setCreatedDay(createdDay);
-        } else {
+                fileinfo.setOriginalDate(originalDate);
+                SimpleDateFormat dateFormat = new SimpleDateFormat("YYYY-MM-dd-HH:mm:ss");
+                String createdDate = dateFormat.format(originalDate).substring(0,10);
+                String createdTime = dateFormat.format(originalDate).substring(11);
+                String createdDay = commonFunction.getDateDay(createdDate, "yyyy-MM-dd");
 
-            fileinfo.setCreatedDate("날짜정보없음");
-            fileinfo.setCreatedTime("시간정보없음");
-            fileinfo.setCreatedDay("");
-        }
-        if(StringUtils.isEmpty(modelName)) {
+                fileinfo.setCreatedDate(createdDate);
+                fileinfo.setCreatedTime(createdTime);
+                fileinfo.setCreatedDay(createdDay);
+            } else {
 
-            fileinfo.setModelName("카메라정보없음");
-        } else {
-
-            fileinfo.setModelName(modelName);
-        }
-
-        GpsDirectory gpsDirectory = metadata.getDirectory(GpsDirectory.class);
-        if(gpsDirectory != null) {
-
-            GeoLocation geoLocation = gpsDirectory.getGeoLocation();
-            if(geoLocation != null && !geoLocation.isZero()) {
-
-                fileinfo.setLatitude(geoLocation.getLatitude());
-                fileinfo.setLongitude(geoLocation.getLongitude());
-                fileinfo.setRoadAddress(mapService.getRoadAddrFromGPS(geoLocation.getLongitude(),geoLocation.getLatitude()));
-                fileinfo.setParcelAddress(mapService.getParcelAddrFromGPS(geoLocation.getLongitude(),geoLocation.getLatitude()));
+                fileinfo.setCreatedDate("날짜정보없음");
+                fileinfo.setCreatedTime("시간정보없음");
+                fileinfo.setCreatedDay("");
             }
+            if(StringUtils.isEmpty(modelName)) {
+
+                fileinfo.setModelName("카메라정보없음");
+            } else {
+
+                fileinfo.setModelName(modelName);
+            }
+
+            GpsDirectory gpsDirectory = metadata.getDirectory(GpsDirectory.class);
+            if(gpsDirectory != null) {
+
+                GeoLocation geoLocation = gpsDirectory.getGeoLocation();
+                if(geoLocation != null && !geoLocation.isZero()) {
+
+                    fileinfo.setLatitude(geoLocation.getLatitude());
+                    fileinfo.setLongitude(geoLocation.getLongitude());
+                    fileinfo.setRoadAddress(mapService.getRoadAddrFromGPS(geoLocation.getLongitude(),geoLocation.getLatitude()));
+                    fileinfo.setParcelAddress(mapService.getParcelAddrFromGPS(geoLocation.getLongitude(),geoLocation.getLatitude()));
+                }
+            } else {
+
+                fileinfo.setRoadAddress("장소정보없음");
+                fileinfo.setParcelAddress("장소정보없음");
+            }
+
+            fileinfo.setUploadedDate(commonFunction.getTodayString());
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new PasentureException("이미지 메타정보 추출 도중 오류가 발생했습니다.");
         }
 
-        fileinfo.setUploadedDate(commonFunction.getTodayString());
         return fileinfo;
     }
 

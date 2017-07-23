@@ -18,11 +18,11 @@ public class GlobalExceptionMapper {
 
     @ExceptionHandler(Exception.class)
     @ResponseBody
-    protected ResponseEntity<?> handleIOException(Exception ex) {
+    protected ResponseEntity<?> handleException(Exception ex) {
 
-        String msg = "파일 업로드/다운로드 중 오류가 발생했습니다.";
+        String msg = ex.getMessage();
         ex.printStackTrace();
-        return  new ResponseEntity<Exception>(ex,HttpStatus.INTERNAL_SERVER_ERROR);
+        return  new ResponseEntity<String>(msg, HttpStatus.INTERNAL_SERVER_ERROR);
 
     }
 

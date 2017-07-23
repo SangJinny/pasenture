@@ -80,6 +80,7 @@
                     if(divCode == '3' && addrValLen < 2) {
 
                         alert("두글자 이상 입력하세요.");
+                        return false;
                     }
                     break;
             }
@@ -94,6 +95,17 @@
 
                     console.log(response);
                     handlingResultJson(response)
+                },
+                error:function (data, status) {
+
+                    alert(data.responseText);
+                },
+                StatusCode: {
+
+                    500:function(data) {
+
+                        alert(data.responseText);
+                    }
                 }
             });
 

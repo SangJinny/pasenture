@@ -1,5 +1,6 @@
 package com.pasenture.image;
 
+import com.pasenture.error.PasentureException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -41,7 +42,7 @@ public class ImageController {
     }
 
     @RequestMapping(value = "/uploadedImage/{key}", method = RequestMethod.GET)
-    public void inquireImage(HttpServletResponse response, @PathVariable String key) throws IOException {
+    public void inquireImage(HttpServletResponse response, @PathVariable String key) throws PasentureException {
 
         imageService.inquireFile(key, response);
     }
