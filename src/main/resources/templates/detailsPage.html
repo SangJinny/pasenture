@@ -6,7 +6,7 @@
 <body>
 <div class="row" layout:fragment="content">
     <h2 class="indigo-text center">상세 정보</h2>
-    <div class="row col l8 s12 offset-l2">
+    <div class="row col l8 m10 s12 offset-l2 offset-m1">
         <div class=" " id="detail-container">
             <img class="materialboxed" th:attr="src=@{'/uploadedImage/'+${FileInfo.fileKey}}"/>
             <div class="meta-info-container">
@@ -33,10 +33,26 @@
                     <span th:unless="${FileInfo.memo != ''}">메모정보없음</span>
             </div>
         </div>
+        <div class="row col l2 m3 s12 offset-l10 offset-m9 ">
+            <form id="download_form">
+
+                <input type="hidden" name="key" id="key"/>
+            </form>
+            <button class="btn light-blue lighten-2 waves-effect waves-light col s12" id="download_btn"><span>다운로드</span><i class="material-icons right">file_download</i>
+            </button>
+        </div>
     </div>
     <script type="text/javascript">
         $(document).ready(function () {
             $('.materialboxed').materialbox();
+            $('#download_btn').click(function () {
+
+                var fileKey = $('img').attr('src').substring(15);
+                var url = "/api/image/download";
+                $('#key').val(fileKey);
+                $('#download_form').attr({action:url, method:'GET'}).submit();
+
+            })
         })
     </script>
 </div>

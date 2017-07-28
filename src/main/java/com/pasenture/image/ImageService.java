@@ -160,6 +160,7 @@ public class ImageService {
             inputStream = getStreamOnS3(fileName);
             bytes = IOUtils.toByteArray(inputStream);
             downloadFileName = URLEncoder.encode(fileName, "UTF-8").replaceAll("\\+", "%20");
+            downloadFileName += ".jpg";
         } catch (IOException e) {
             e.printStackTrace();
             throw new PasentureException("파일 다운로드 도중 오류가 발생했습니다.");
