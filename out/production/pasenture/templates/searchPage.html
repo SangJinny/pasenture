@@ -1,18 +1,32 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorator="layout/default">
 <head lang="en">
-    <title>Profile Picture Upload</title>
+    <title>Search Your Images</title>
 </head>
 <body>
 <div class="row" layout:fragment="content">
-    <h2 class="indigo-text center">파일 검색</h2>
+    <h2 class="indigo-text center">이미지 검색</h2>
     <div class="row">
-        <form th:action="@{/api/image/search/date}" method="get" class="col m8 s12 offset-m2" id="searchForm">
-            <div class="input-field col s9">
-                <input type="date" name="date"/>
+        <form th:action="@{/api/image/search}" method="get" class="col m8 s12 offset-m2" id="searchForm">
+            <div class="input-field col s12 m2">
+                <select class="browser-default">
+                    <option value="1">찍은날짜</option>
+                    <option value="2">업로드날짜</option>
+                    <option value="3">찍은장소</option>
+                </select>
+                <input style="display: none" type="text" name="divCode" id="divCode"/>
             </div>
-            <div class="input-field col s3">
-                <button class="btn light-blue lighten-2 waves-effect waves-light" type="submit">
+            <div class="input-field col s6 m4" id="startDateInput">
+                <input type="date" name="startDate" class="validate"/>
+            </div>
+            <div class="input-field col s6 m4" id="endDateInput">
+                <input type="date" name="endDate" class="validate"/>
+            </div>
+            <div class="input_field col s12 m8" id="addressInput" style="display: none">
+                <input placeholder="두글자 이상 입력하세요." type="text" name="address" style="margin-top: 10px;"/>
+            </div>
+            <div class="input-field col s12 m2">
+                <button class="btn light-blue lighten-2 waves-effect waves-light col s12" type="submit" style="margin-top: 10px;">
                     검색<i class="mdi-content-send right"></i>
                 </button>
             </div>
@@ -25,17 +39,55 @@
     </div>
 
     <script type="text/javascript">
+        //<![CDATA[
         $(document).ready(function(){
             $("#searchForm").on("submit", requestFileInfoList);
+            $('select').material_select();
+            $('select').on('change', function () {
+
+                if($('.browser-default').val() == "3") {
+
+                    $('#addressInput').attr('style', 'display:block;');
+                    $('#startDateInput').attr('style', 'display:none;');
+                    $('#endDateInput').attr('style', 'display:none;');
+                } else {
+
+                    $('#addressInput').attr('style', 'display:none;');
+                    $('#startDateInput').attr('style', 'display:block;');
+                    $('#endDateInput').attr('style', 'display:block;');
+                }
+            })
         });
 
 
         function requestFileInfoList() {
 
-            var data = $(this).serialize();
+            // 콤보박스 세팅.
+            var divCode = $('.browser-default').val();
+            $("#divCode").val(divCode);
 
+            var url = '';
+            switch (divCode) {
+                case '1':
+                case '2':
+                    url = "/api/image/search/date";
+                    break;
+                case '3':
+                    url = "/api/image/search/address";
+
+                    // 주소 전송시, 두글자 이상인지 검증
+                    var addrValLen = $('#addressInput').children().val().length;
+                    if(divCode == '3' && addrValLen < 2) {
+
+                        alert("두글자 이상 입력하세요.");
+                        return false;
+                    }
+                    break;
+            }
+
+            var data = $(this).serialize();
             $.ajax({
-                url:"/api/image/search/date",
+                url: url,
                 type:"GET",
                 contentType:"application/json;charset=UTF-8",
                 data: data,
@@ -43,6 +95,17 @@
 
                     console.log(response);
                     handlingResultJson(response)
+                },
+                error:function (data, status) {
+
+                    alert(data.responseText);
+                },
+                StatusCode: {
+
+                    500:function(data) {
+
+                        alert(data.responseText);
+                    }
                 }
             });
 
@@ -59,6 +122,7 @@
             $("#contents").empty();
             responseJson.forEach(function (fileInfo) {
 
+                /*
                 if(fileInfo.createdDate == "" || fileInfo.createdDate == null) {
                     fileInfo.createdDate = "날짜정보없음";
                 }
@@ -70,15 +134,21 @@
                 if(fileInfo.position == "" || fileInfo.position == null) {
                     fileInfo.postion = "위치정보없음";
                 }
-
+                */
                 var newFigure = $("#contentsFigure").clone(true);
                 newFigure.attr("style","display:inline-block;");
-                newFigure.attr("id", "contentsFigure_"+index);
+                newFigure.attr("id", fileInfo.fileKey);
                 newFigure.children("img").attr("src","/uploadedImage/"+fileInfo.fileKey+"_thumbnail");
                 newFigure.children("figcaption").children().children("#createdDate").text(fileInfo.createdDate+" "+fileInfo.createdDay);
-                newFigure.children("figcaption").children().children("#createdTime").text(fileInfo.createdTime);
-                newFigure.children("figcaption").children().children("#position").text(fileInfo.postion+" ");
-                newFigure.children("figcaption").children().children("#memo").text(fileInfo.memo+" ");
+                //newFigure.children("figcaption").children().children("#createdTime").text(fileInfo.createdTime);
+                newFigure.children("figcaption").children().children("#position").text(fileInfo.parcelAddress);
+                //newFigure.children("figcaption").children().children("#memo").text(fileInfo.memo+" ");
+
+                // 클릭이벤트 연결.
+                newFigure.click(function () {
+
+                    location.href="/details?key="+$(this).attr('id');
+                });
 
                 $("#contents").append(newFigure);
                 index++;
@@ -86,6 +156,7 @@
 
             })
         }
+        //]]>
     </script>
 </div>
 </body>

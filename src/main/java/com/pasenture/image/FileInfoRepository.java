@@ -18,13 +18,13 @@ import java.util.List;
 @Repository
 public interface FileInfoRepository extends JpaRepository<FileInfo, String>, JpaSpecificationExecutor{
 
-   public List<FileInfo> findByCreatedDate (String createdDate);
+   public List<FileInfo> findByCreatedDateOrderByCreatedDateAsc (String createdDate);
 
-   public List<FileInfo> findByUploadedDate (String UploadedDate);
+   public List<FileInfo> findByUploadedDateOrderByCreatedDateAsc (String UploadedDate);
 
-   public List<FileInfo> findByCreatedDateBetween(String startDate, String endDate);
+   public List<FileInfo> findByCreatedDateBetweenOrderByCreatedDateAsc (String startDate, String endDate);
 
-   public List<FileInfo> findByUploadedDateBetween(String startDate, String endDate);
+   public List<FileInfo> findByUploadedDateBetweenOrderByCreatedDateAsc (String startDate, String endDate);
 
-   public List<FileInfo> findByRoadAddressContainingOrParcelAddressContaining (String address1, String address2);
+   public List<FileInfo> findByRoadAddressContainingOrParcelAddressContainingOrderByCreatedDateAsc (String address1, String address2);
 }

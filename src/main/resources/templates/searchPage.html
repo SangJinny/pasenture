@@ -40,12 +40,12 @@
 
     <script type="text/javascript">
         //<![CDATA[
-        $(document).ready(function(){
+        $(document).ready(function() {
             $("#searchForm").on("submit", requestFileInfoList);
             $('select').material_select();
             $('select').on('change', function () {
 
-                if($('.browser-default').val() == "3") {
+                if ($('.browser-default').val() == "3") {
 
                     $('#addressInput').attr('style', 'display:block;');
                     $('#startDateInput').attr('style', 'display:none;');
@@ -56,7 +56,13 @@
                     $('#startDateInput').attr('style', 'display:block;');
                     $('#endDateInput').attr('style', 'display:block;');
                 }
-            })
+            });
+
+            $(window).resize(function () {
+
+                resizeContainers();
+            });
+
         });
 
 
@@ -120,41 +126,52 @@
 
             var index = 0;
             $("#contents").empty();
+            var imgWidth = 0;
+            var imgHeight = 0;
             responseJson.forEach(function (fileInfo) {
 
-                /*
-                if(fileInfo.createdDate == "" || fileInfo.createdDate == null) {
-                    fileInfo.createdDate = "날짜정보없음";
-                }
-
-                if(fileInfo.createdTime == "" || fileInfo.createdTime == null) {
-                    fileInfo.createdTime = "시간정보없음";
-                }
-
-                if(fileInfo.position == "" || fileInfo.position == null) {
-                    fileInfo.postion = "위치정보없음";
-                }
-                */
-                var newFigure = $("#contentsFigure").clone(true);
-                newFigure.attr("style","display:inline-block;");
-                newFigure.attr("id", fileInfo.fileKey);
-                newFigure.children("img").attr("src","/uploadedImage/"+fileInfo.fileKey+"_thumbnail");
-                newFigure.children("figcaption").children().children("#createdDate").text(fileInfo.createdDate+" "+fileInfo.createdDay);
-                //newFigure.children("figcaption").children().children("#createdTime").text(fileInfo.createdTime);
-                newFigure.children("figcaption").children().children("#position").text(fileInfo.parcelAddress);
-                //newFigure.children("figcaption").children().children("#memo").text(fileInfo.memo+" ");
+                var newDiv = $("#contentsDiv").clone(true);
+                newDiv.attr("style","display:inline-block;");
+                newDiv.attr("id", fileInfo.fileKey);
 
                 // 클릭이벤트 연결.
-                newFigure.click(function () {
+                newDiv.click(function () {
 
                     location.href="/details?key="+$(this).attr('id');
                 });
 
-                $("#contents").append(newFigure);
+                var newContainer = newDiv.children("div");
+                newContainer.children(".img-container").children("img").attr("src","/uploadedImage/"+fileInfo.fileKey+"_thumbnail");
+                /*newContainer.children(".img-container").children("img").load(function(){ //이미지를 다 불러온후 확인하기 위해
+
+                    // 최초 한번만 계산을 수행한다.
+                    if(imgWidth == 0 && imgHeight == 0) {
+
+                        imgWidth = newContainer.children(".img-container").children("img").width();
+                        imgHeight = imgWidth * 0.75;
+                    }
+
+                    newContainer.children(".img-container").attr("style","height:"+imgHeight+"px;");
+
+                });*/
+                newContainer.children(".meta-info-container").children().children("#createdDate").text(fileInfo.createdDate+" "+fileInfo.createdDay);
+                newContainer.children(".meta-info-container").children().children("#position").text(fileInfo.parcelAddress);
+
+                $("#contents").append(newDiv);
                 index++;
 
+            });
+            resizeContainers();
+        }
 
-            })
+        function resizeContainers() {
+
+            $('#contents').children('.search-results').each(function () {
+
+                var newWidth = $(this).children('.contents-container').children('.img-container').width();
+                var newHeight = newWidth * 0.75;
+                $(this).children('.contents-container').children('.img-container').attr("style", "height:"+newHeight+"px;");
+            });
         }
         //]]>
     </script>

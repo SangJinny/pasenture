@@ -22,6 +22,7 @@ import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.http.HttpHeaders;
@@ -116,7 +117,7 @@ public class ImageService {
 
 
     //S3에 파일을 업로드한다.
-    public void uploadOnS3(String fileName, File file) {
+    public void uploadOnS3(String fileName, File file) throws PasentureException {
 
         TransferManager transferManager = new TransferManager(this.amazonS3);
         PutObjectRequest request = new PutObjectRequest(bucket, fileName, file);
@@ -137,18 +138,30 @@ public class ImageService {
             upload.waitForCompletion();
         } catch (AmazonClientException amazonClientException) {
             amazonClientException.printStackTrace();
-            new PasentureException("이미지 서버 접속 도중 오류가 발생했습니다.");
+            throw new PasentureException("이미지 서버 접속 도중 오류가 발생했습니다.");
         } catch (InterruptedException e) {
             e.printStackTrace();
-            new PasentureException("이미지 서버 접속 도중 오류가 발생했습니다.");
+            throw new PasentureException("이미지 서버 접속 도중 오류가 발생했습니다.");
         }
     }
 
     // S3에서 파일이 들어있는 InputStream 가져옴
-    public InputStream getStreamOnS3(String fileName) throws IOException {
+    public InputStream getStreamOnS3(String fileName) throws PasentureException {
 
-        Resource resource = this.resourceLoader.getResource("s3://imagestorage-seoul-001/"+fileName);
-        return resource.getInputStream();
+        try {
+            InputStream inputStream = null;
+            Resource resource = this.resourceLoader.getResource("s3://imagestorage-seoul-001/"+fileName);
+            if(!resource.exists()) {
+                throw new PasentureException("이미지 서버에 해당 파일이 없습니다.");
+            }
+
+            return resource.getInputStream();
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new PasentureException("이미지 서버 접속 도중 오류가 발생했습니다.");
+        }
+
+
     }
 
     // InputStream에서 파일을 byte형태로 가져옴 (다운로드)
@@ -160,15 +173,22 @@ public class ImageService {
             inputStream = getStreamOnS3(fileName);
             bytes = IOUtils.toByteArray(inputStream);
             downloadFileName = URLEncoder.encode(fileName, "UTF-8").replaceAll("\\+", "%20");
-            downloadFileName += ".jpg";
+
+            File tempFile = new File(fileName);
+
+            if(!downloadFileName.endsWith(".jpg") && !downloadFileName.endsWith(".JPG")) {
+
+                downloadFileName += ".jpg";
+            }
         } catch (IOException e) {
             e.printStackTrace();
             throw new PasentureException("파일 다운로드 도중 오류가 발생했습니다.");
         }
         HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+        httpHeaders.setContentType(MediaType.IMAGE_JPEG);
         httpHeaders.setContentLength(bytes.length);
-        httpHeaders.setContentDispositionFormData("attachment", downloadFileName);
+        //httpHeaders.setContentDispositionFormData("file", downloadFileName);
+        httpHeaders.set("Content-Disposition", "attachment; filename="+downloadFileName);
         return new ResponseEntity<>(bytes, httpHeaders, HttpStatus.OK);
     }
 
@@ -214,12 +234,12 @@ public class ImageService {
 
             // 찍은날짜기반
             case "1":
-                fileInfoList = fileInfoRepository.findByCreatedDate(targetDate);
+                fileInfoList = fileInfoRepository.findByCreatedDateOrderByCreatedDateAsc(targetDate);
                 break;
 
             // 업데이트날짜기반
             case "2":
-                fileInfoList = fileInfoRepository.findByUploadedDate(targetDate);
+                fileInfoList = fileInfoRepository.findByUploadedDateOrderByCreatedDateAsc(targetDate);
                 break;
         }
         return fileInfoList;
@@ -232,12 +252,12 @@ public class ImageService {
 
             // 찍은날짜기반
             case "1":
-                fileInfoList = fileInfoRepository.findByCreatedDateBetween(startDate, endDate);
+                fileInfoList = fileInfoRepository.findByCreatedDateBetweenOrderByCreatedDateAsc(startDate, endDate);
                 break;
 
             // 업데이트날짜기반
             case "2":
-                fileInfoList = fileInfoRepository.findByUploadedDateBetween(startDate, endDate);
+                fileInfoList = fileInfoRepository.findByUploadedDateBetweenOrderByCreatedDateAsc(startDate, endDate);
                 break;
         }
         return fileInfoList;
@@ -247,7 +267,7 @@ public class ImageService {
 
         List<FileInfo> fileInfoList = Collections.emptyList();
         fileInfoList = fileInfoRepository.
-                findByRoadAddressContainingOrParcelAddressContaining(address, address);
+                findByRoadAddressContainingOrParcelAddressContainingOrderByCreatedDateAsc(address, address);
         return fileInfoList;
     }
 

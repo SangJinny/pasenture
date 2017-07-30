@@ -9,7 +9,7 @@
     <div class="row col l8 m10 s12 offset-l2 offset-m1">
         <div class=" " id="detail-container">
             <img class="materialboxed" th:attr="src=@{'/uploadedImage/'+${FileInfo.fileKey}}"/>
-            <div class="detail-info-container">
+            <div class="meta-info-container">
                 <p><i class="material-icons left">today</i>
                     <span id="createdDate" th:text="${FileInfo.createdDate}+' '+' '+${FileInfo.createdDay}">YYYY/MM/DD XXX</span>
                     <span th:unless="${FileInfo.createdDate != ''}">날짜정보없음</span></p>

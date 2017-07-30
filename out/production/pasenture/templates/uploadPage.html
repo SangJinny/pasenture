@@ -39,13 +39,22 @@
                         contentType: false,
                         processData: false,
                         data : data,
-                        success: function(responseData, textStatus, jqXHR){
+/*                        success: function(responseData, textStatus, jqXHR){
                             console.log(textStatus);
 
                             alert("업로드 성공!");
                         },
-                        error: function(err){
-                            console.log(err);
+                        error: function(responseData, textStatus, statusCode){
+                            console.log(responseData);
+                        },*/
+
+                        statusCode: {
+                            201: function (data) {
+                              alert("업로드 성공!");
+                            },
+                            500: function(data) {
+                                alert(data.responseText);
+                            }
                         }
                     });
                     return false;
