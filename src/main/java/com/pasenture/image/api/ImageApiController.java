@@ -49,20 +49,20 @@ public class ImageApiController {
 
     @RequestMapping(value ="/search/date", method = RequestMethod.GET ,produces = "application/json; charset=utf8")
     public ResponseEntity<List<FileInfo>> searchByDate(@RequestParam String divCode, @RequestParam String startDate,
-                                 @RequestParam String endDate, @RequestParam String address) throws ParseException, PasentureException {
+                                 @RequestParam String endDate, @RequestParam String address, @RequestParam int page) throws ParseException, PasentureException {
 
         List<FileInfo> resultList= Collections.EMPTY_LIST;
 
         // 둘중 하나만 입력됐으면 단일날짜 입력으로 처리.
         if(StringUtils.isEmpty(endDate)) {
 
-            resultList = imageService.searchByDate(startDate, divCode);
+            resultList = imageService.searchByDate(startDate, divCode, page);
         } else if (StringUtils.isEmpty(startDate)) {
 
-            resultList = imageService.searchByDate(endDate, divCode);
+            resultList = imageService.searchByDate(endDate, divCode, page);
         }  else {
 
-            resultList = imageService.searchBetweenDates(startDate, endDate, divCode);
+            resultList = imageService.searchBetweenDates(startDate, endDate, divCode, page);
         }
 
         if(resultList.size() == 0) {

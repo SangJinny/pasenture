@@ -12,6 +12,19 @@
     <style type="text/css">
         html{font-family: 'Hanna', sans-serif;}
 
+        #prev-button  {
+            height:100%;
+            color:#FFFFFF;
+            padding-left: 3%;
+            padding-right: 3%;
+        }
+
+        #next-button {
+            height:100%;
+            color:#FFFFFF;
+            padding-left: 3%;
+            padding-right: 3%;
+        }
         /* for details page */
         #detail-container{
             padding:10px;
@@ -112,9 +125,10 @@
             }
             .meta-info-container {
                 margin-top:5px;
+                height:90px;
             }
             .meta-info-container p {
-                font-size: 14px;
+                font-size: 13px;
                 margin-top: 10px;
                 margin-bottom: 10px
             }
@@ -254,7 +268,7 @@
 </head>
 
 <body>
-<ui id="menu-dropdown" class="dropdown-content" style="width:200px">
+<ui id="menu-dropdown" class="dropdown-content" style="width:100px">
     <li id="uploadPage"><a href="#" class="indigo-text">업로드</a></li>
     <li class="divider"></li>
     <li id="searchPage"><a href="/search" class="indigo-text">사진보기</a></li>
@@ -263,13 +277,21 @@
     <li class="divider"></li>
     <li id="aiPage"><a href="#" class="indigo-text">AI연구소(준비중)</a></li>
 </ui>
-<nav>
-    <div class="nav-wrapper light-blue lighten-2">
-        <ul class="left" style="width:200px">
-            <li style="width:200px"><a class="dropdown-button" href="#!" data-activates="menu-dropdown"><i class="mdi-action-subject"></i></a></li>
-        </ul>
-    </div>
-</nav>
+<div class="navbar-fixed">
+    <nav>
+        <div class="nav-wrapper light-blue lighten-2">
+            <ul class="left" style="width:100px">
+                <li style="width:160px"><a class="dropdown-button" href="#!" data-activates="menu-dropdown"><i class="mdi-action-subject"></i></a></li>
+            </ul>
+            <button id="next-button" class="right light-blue lighten-2 btn-flat waves-effect waves-light" >
+                <i class="large material-icons">arrow_forward</i>
+            </button>
+            <button id="prev-button" class="right light-blue lighten-2 btn-flat waves-effect waves-light">
+                <i class="large material-icons">arrow_back</i>
+            </button>
+        </div>
+    </nav>
+</div>
 
 <section layout:fragment="content">
     <p>Page content goes here</p>

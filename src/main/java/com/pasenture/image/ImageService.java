@@ -25,6 +25,8 @@ import org.springframework.context.MessageSource;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -227,37 +229,58 @@ public class ImageService {
         return fileInfo;
     }
 
-    public List<FileInfo> searchByDate (String targetDate, String divCode) throws ParseException {
+    public List<FileInfo> searchByDate (String targetDate, String divCode, int page) throws ParseException {
 
         List<FileInfo> fileInfoList = Collections.emptyList();
         switch (divCode) {
 
             // 찍은날짜기반
             case "1":
-                fileInfoList = fileInfoRepository.findByCreatedDateOrderByCreatedDateAsc(targetDate);
+                if(page < 0) {
+                    fileInfoList = fileInfoRepository.findByCreatedDateOrderByCreatedDateAsc(targetDate);
+                } else {
+                    PageRequest pageRequest = new PageRequest(page-1, 30, Sort.Direction.ASC, "createdDate");
+                    fileInfoList = fileInfoRepository.findByCreatedDate(targetDate, pageRequest);
+                }
                 break;
 
             // 업데이트날짜기반
             case "2":
-                fileInfoList = fileInfoRepository.findByUploadedDateOrderByCreatedDateAsc(targetDate);
+                if(page < 0) {
+                    fileInfoList = fileInfoRepository.findByUploadedDateOrderByCreatedDateAsc(targetDate);
+                } else {
+                    PageRequest pageRequest = new PageRequest(page-1, 30, Sort.Direction.ASC, "uploadedDate");
+                    fileInfoList = fileInfoRepository.findByUploadedDate(targetDate, pageRequest);
+                }
                 break;
         }
         return fileInfoList;
     }
 
-    public List<FileInfo> searchBetweenDates (String startDate, String endDate, String divCode) {
+    public List<FileInfo> searchBetweenDates (String startDate, String endDate, String divCode, int page) {
 
         List<FileInfo> fileInfoList = Collections.emptyList();
+
         switch (divCode) {
 
             // 찍은날짜기반
             case "1":
-                fileInfoList = fileInfoRepository.findByCreatedDateBetweenOrderByCreatedDateAsc(startDate, endDate);
+                if(page < 0) {
+                    fileInfoList = fileInfoRepository.findByCreatedDateBetweenOrderByCreatedDateAsc(startDate, endDate);
+                } else {
+                    PageRequest pageRequest = new PageRequest(page-1, 30, Sort.Direction.ASC, "createdDate");
+                    fileInfoList = fileInfoRepository.findByCreatedDateBetween(startDate, endDate, pageRequest);
+                }
                 break;
 
             // 업데이트날짜기반
             case "2":
-                fileInfoList = fileInfoRepository.findByUploadedDateBetweenOrderByCreatedDateAsc(startDate, endDate);
+                if(page < 0) {
+                    fileInfoList = fileInfoRepository.findByUploadedDateBetweenOrderByCreatedDateAsc(startDate, endDate);
+                } else {
+                    PageRequest pageRequest = new PageRequest(page-1, 30, Sort.Direction.ASC, "uploadedDate");
+                    fileInfoList = fileInfoRepository.findByUploadedDateBetween(startDate, endDate, pageRequest);
+                }
                 break;
         }
         return fileInfoList;
