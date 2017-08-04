@@ -2,6 +2,26 @@
 <html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorator="layout/default">
 <head lang="en">
     <title>Search Your Images</title>
+    <style type="text/css">
+        #loadingImage {
+            text-align: center;
+            margin-top:15%;
+        }
+        #pageInfo {
+            margin: 20px auto;
+            text-align: center;
+        }
+        /* label underline focus color */
+        .input-field input[type=date]:focus {
+            border-bottom: 1px solid #3f51b5;
+            box-shadow: 0 1px 0 0 #3f51b5;
+        }
+        /* label underline focus color */
+        .input-field input[type=text]:focus {
+            border-bottom: 1px solid #3f51b5;
+            box-shadow: 0 1px 0 0 #3f51b5;
+        }
+    </style>
 </head>
 <body>
 <div class="row" layout:fragment="content">
@@ -26,12 +46,26 @@
                 <input placeholder="두글자 이상 입력하세요." type="text" name="address" style="margin-top: 10px;"/>
             </div>
             <div class="input_field col s12"  style="display:none;">
-                <input type="text" id="currentPage" name="page" value="1"/>
+                <input type="text" id="requestPageNum" name="page" value="1"/>
             </div>
             <div class="input-field col s12 m2">
-                <button class="btn light-blue lighten-2 waves-effect waves-light col s12" type="submit" style="margin-top: 10px;">
+                <button id="submit-button" class="btn light-blue lighten-2 waves-effect waves-light col s12" style="margin-top: 10px;">
                     검색<i class="mdi-content-send right"></i>
                 </button>
+            </div>
+
+            <div class="col s12" id="loadingImage" style="display:none;">
+                <div class="preloader-wrapper big active" style="width:200px; height:200px;">
+                    <div class="spinner-layer spinner-blue-only">
+                        <div class="circle-clipper left">
+                            <div class="circle"></div>
+                        </div><div class="gap-patch">
+                        <div class="circle"></div>
+                    </div><div class="circle-clipper right">
+                        <div class="circle"></div>
+                    </div>
+                    </div>
+                </div>
             </div>
 
         </form>
@@ -41,10 +75,28 @@
 
     </div>
 
+    <div id="pageInfo" class="col s12" style="display:none;">
+        <span>총</span>
+        <span id="totalPageNum" style="font-weight:bold;font-size: 20px;"></span>
+        <span>페이지 중</span>
+        <span id="currentPageNum" style="font-weight:bold;font-size: 20px; color:#3f51b5">1</span>
+        <span>페이지</span>
+    </div>
+
+    <div class="col s12 m3 l2 xl1 offset-m9 offset-l10">
+        <button id="entire-button" class="btn light-blue lighten-2 waves-effect waves-light col s12" style="display:none;">
+            전체보기<i class="material-icons right">search</i>
+        </button>
+    </div>
+
+
+
     <script type="text/javascript">
         //<![CDATA[
         $(document).ready(function() {
+
             $("#searchForm").on("submit", requestFileInfoList);
+
             $('select').material_select();
             $('select').on('change', function () {
 
@@ -66,16 +118,65 @@
                 resizeContainers();
             });
 
-            $('#next-button').on('click', function () {
-                var currentPageValue = parseInt($('#currentPage').val());
-                $('#currentPage').val(currentPageValue+1);
+            $('#submit-button').on("click", function () {
 
+                $('#requestPageNum').val(1);
                 $("#searchForm").trigger('submit');
-            })
+            });
+
+            $('#next-button').on('click', function () {
+
+                var requestPageNumValue = parseInt($('#requestPageNum').val());
+                if(requestPageNumValue < parseInt($('#totalPageNum').text())) {
+
+                    $('#requestPageNum').val(requestPageNumValue+1);
+                } else {
+
+                    alert("마지막 페이지 입니다.");
+                    return;
+                }
+                $("#searchForm").trigger('submit');
+            });
+
+            $('#prev-button').on('click', function () {
+
+                var requestPageNumValue = parseInt($('#requestPageNum').val());
+                if(requestPageNumValue > 1) {
+
+                    requestPageNumValue--;
+                } else if(requestPageNumValue >= 0) {
+
+                    alert("첫 페이지 입니다.");
+                    return;
+                }
+
+                $('#requestPageNum').val(requestPageNumValue);
+                $("#searchForm").trigger('submit');
+            });
+
+            $('#entire-button').on('click', function () {
+
+                $('#requestPageNum').val(-1);
+                $("#searchForm").trigger('submit');
+            });
         });
 
 
         function requestFileInfoList() {
+
+            // 이미 검색된 내용 지움.
+            $("#contents").empty();
+
+            // 로딩 이미지 보여줌
+            $('#loadingImage').attr("style","display:inline-block;");
+
+            // 버튼 클릭 후, 로딩되는 동안 가려주기 위함.
+            $('#entire-button').attr('style','display:none;');
+            $('#pageInfo').attr('style','display:none;');
+            $('#prev-button').attr("style","display:none;");
+            $('#next-button').attr("style","display:none;");
+
+            var requestPageNumValue = parseInt($('#requestPageNum').val());
 
             // 콤보박스 세팅.
             var divCode = $('.browser-default').val();
@@ -101,6 +202,7 @@
             }
 
             var data = $(this).serialize();
+
             $.ajax({
                 url: url,
                 type:"GET",
@@ -108,18 +210,26 @@
                 data: data,
                 success:function (response) {
 
-                    console.log(response);
-                    handlingResultJson(response)
+                    console.log(response.list);
+                    console.log(response.totalCnt);
+                    handlingResultJson(response.list);
+
+                    $('#totalPageNum').text(response.totalCnt);
+                    $('#currentPageNum').text($('#requestPageNum').val());
                 },
                 error:function (data, status) {
 
                     alert(data.responseText);
+                    // 로딩 이미지 숨김
+                    $('#loadingImage').attr("style","display:none;");
                 },
                 StatusCode: {
 
                     500:function(data) {
 
                         alert(data.responseText);
+                        // 로딩 이미지 숨김
+                        $('#loadingImage').attr("style","display:none;");
                     }
                 }
             });
@@ -129,12 +239,12 @@
 
         function handlingResultJson(response) {
 
+            $("body").scrollTop(0);
 
             var responseJson = $.parseJSON( JSON.stringify(response));
             var length = responseJson.length;
 
             var index = 0;
-            $("#contents").empty();
             var imgWidth = 0;
             var imgHeight = 0;
             responseJson.forEach(function (fileInfo) {
@@ -151,18 +261,6 @@
 
                 var newContainer = newDiv.children("div");
                 newContainer.children(".img-container").children("img").attr("src","/uploadedImage/"+fileInfo.fileKey+"_thumbnail");
-                /*newContainer.children(".img-container").children("img").load(function(){ //이미지를 다 불러온후 확인하기 위해
-
-                    // 최초 한번만 계산을 수행한다.
-                    if(imgWidth == 0 && imgHeight == 0) {
-
-                        imgWidth = newContainer.children(".img-container").children("img").width();
-                        imgHeight = imgWidth * 0.75;
-                    }
-
-                    newContainer.children(".img-container").attr("style","height:"+imgHeight+"px;");
-
-                });*/
                 newContainer.children(".meta-info-container").children().children("#createdDate").text(fileInfo.createdDate+" "+fileInfo.createdDay);
                 newContainer.children(".meta-info-container").children().children("#position").text(fileInfo.parcelAddress);
 
@@ -171,6 +269,27 @@
 
             });
             resizeContainers();
+
+            // 로딩 이미지 숨김
+            $('#loadingImage').attr("style","display:none;");
+            var pageNumValue = parseInt($('#requestPageNum').val());
+
+            // 전체조회를 했음.
+            if(pageNumValue == -1) {
+
+                // 전체보기 및 페이지정보 가리기
+                $('#entire-button').attr('style','display:none;');
+                $('#pageInfo').attr('style','display:none;');
+                $('#prev-button').attr("style","display:none;");
+                $('#next-button').attr("style","display:none;");
+            } else {
+
+                // 전체보기, 페이징화살표, 페이지정보 보여주기.
+                $('#entire-button').attr('style','display:inline-block;');
+                $('#pageInfo').attr("style","display:inline-block;");
+                $('#next-button').attr('style','display:inline-block');
+                $('#prev-button').attr('style','display:inline-block');
+            }
         }
 
         function resizeContainers() {

@@ -6,24 +6,27 @@
     <title>Default Title</title>
     <link href="webjars/materializecss/0.96.0/css/materialize.css" type="text/css" rel="stylesheet" media="screen,projection"/>
     <link href="https://fonts.googleapis.com/earlyaccess/hanna.css" rel="stylesheet" type="text/css" />
+    <link href="http://fonts.googleapis.com/earlyaccess/notosanskr.css" rel="stylesheet" type="text/css" />
+    <link href="https://cdn.rawgit.com/YJSoft/Webfonts/0.1/BM_JUA.css" rel="stylesheet" type="text/css" />
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+
     <script src="webjars/jquery/2.1.4/jquery.js"></script>
     <script src="webjars/materializecss/0.96.0/js/materialize.js"></script>
     <style type="text/css">
-        html{font-family: 'Hanna', sans-serif;}
+        html{font-family: 'BM JUA', 'Hanna', 'Noto Sans KR', sans-serif;}
 
         #prev-button  {
             height:100%;
             color:#FFFFFF;
             padding-left: 3%;
-            padding-right: 3%;
+            padding-right: calc(2% + 10px);
         }
 
         #next-button {
             height:100%;
             color:#FFFFFF;
-            padding-left: 3%;
-            padding-right: 3%;
+            padding-left: calc(2% + 10px);
+            padding-right: 3%
         }
         /* for details page */
         #detail-container{
@@ -283,10 +286,10 @@
             <ul class="left" style="width:100px">
                 <li style="width:160px"><a class="dropdown-button" href="#!" data-activates="menu-dropdown"><i class="mdi-action-subject"></i></a></li>
             </ul>
-            <button id="next-button" class="right light-blue lighten-2 btn-flat waves-effect waves-light" >
+            <button id="next-button" class="right light-blue lighten-2 btn-flat waves-effect waves-light" style="display:none;">
                 <i class="large material-icons">arrow_forward</i>
             </button>
-            <button id="prev-button" class="right light-blue lighten-2 btn-flat waves-effect waves-light">
+            <button id="prev-button" class="right light-blue lighten-2 btn-flat waves-effect waves-light" style="display:none;">
                 <i class="large material-icons">arrow_back</i>
             </button>
         </div>

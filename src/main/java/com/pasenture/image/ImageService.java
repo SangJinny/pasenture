@@ -9,7 +9,6 @@ import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.transfer.TransferManager;
 import com.amazonaws.services.s3.transfer.Upload;
 import com.drew.imaging.ImageMetadataReader;
-import com.drew.imaging.ImageProcessingException;
 import com.drew.lang.GeoLocation;
 import com.drew.metadata.Metadata;
 import com.drew.metadata.exif.ExifSubIFDDirectory;
@@ -17,14 +16,12 @@ import com.drew.metadata.exif.GpsDirectory;
 import com.pasenture.error.PasentureException;
 import com.pasenture.map.MapService;
 import com.pasenture.module.CommonFunction;
-import net.coobird.thumbnailator.Thumbnails;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.MessageSource;
-import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
@@ -35,21 +32,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletResponse;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.net.URLEncoder;
-import java.sql.SQLException;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 /**
  * Created by Jeon on 2017-05-07.
@@ -75,12 +64,6 @@ public class ImageService {
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
 
-/*    @Autowired
-    private MessageSource messageSource;*/
-
-    /*    @Autowired
-        private AmazonS3Client amazonS3Client;*/
-
     // 업로드된 파일배열을 각각처리함
     // 1. MultipartFile -> File 변환
     // 2. 메타데이터 처리 후 RDS에 업로드
@@ -94,7 +77,6 @@ public class ImageService {
             if(!file.getContentType().equals("image/jpeg") &&
                     !file.getContentType().equals("image/jpg")) {
 
-                //throw new PasentureException(messageSource.getMessage("error.file.type.wrong", null, Locale.getDefault()));
                 throw new PasentureException("JPG 또는 JPEG파일만 업로드 가능합니다.");
             }
         }
@@ -110,8 +92,8 @@ public class ImageService {
                 File file = commonFunction.getFileFromMultipartFile(multipartFile);
                 FileInfo tempFileInfo = uploadOnRDS(file);
                 File thumbnailFile = commonFunction.getThumbnailFromFile(file, 300);
-                uploadOnS3(tempFileInfo.getFileKey(), file);
-                uploadOnS3(tempFileInfo.getThumbnailKey(),thumbnailFile);
+                uploadOnS3(tempFileInfo.getFileKey()+".jpg", file);
+                uploadOnS3(tempFileInfo.getThumbnailKey()+".jpg",thumbnailFile);
             }
         }
     }
@@ -207,19 +189,6 @@ public class ImageService {
         }
     }
 
-/*    public void inquireThumbnailImage (String fileName, HttpServletResponse response) throws IOException {
-
-        //URL에서 이미지 파일을 읽음
-        URL url = new URL("http://localhost:8080/uploadedImage/"+fileName);
-        BufferedImage originalImage = ImageIO.read(url);
-
-        // 썸네일로 변경하여 OutputStream에 적재
-        Thumbnails.of(originalImage)
-                .scale(0.25)
-                .outputFormat("jpg")
-                .toOutputStream(response.getOutputStream());
-    }*/
-
     // RDS에 파일 메타정보를 INSERT
     private FileInfo uploadOnRDS (File file) throws PasentureException {
 
@@ -229,69 +198,144 @@ public class ImageService {
         return fileInfo;
     }
 
-    public List<FileInfo> searchByDate (String targetDate, String divCode, int page) throws ParseException {
+    public Map<String, Object> searchByDate (String targetDate, String divCode, int page) throws PasentureException {
 
+        Map<String, Object> response = new HashMap<String, Object>();
         List<FileInfo> fileInfoList = Collections.emptyList();
-        switch (divCode) {
+        Page<FileInfo> fileInfoPage = null;
 
-            // 찍은날짜기반
-            case "1":
-                if(page < 0) {
+
+        if(page <= 0) {
+
+            switch (divCode) {
+
+                case "1":
                     fileInfoList = fileInfoRepository.findByCreatedDateOrderByCreatedDateAsc(targetDate);
-                } else {
-                    PageRequest pageRequest = new PageRequest(page-1, 30, Sort.Direction.ASC, "createdDate");
-                    fileInfoList = fileInfoRepository.findByCreatedDate(targetDate, pageRequest);
-                }
-                break;
-
-            // 업데이트날짜기반
-            case "2":
-                if(page < 0) {
+                    break;
+                case "2":
                     fileInfoList = fileInfoRepository.findByUploadedDateOrderByCreatedDateAsc(targetDate);
-                } else {
-                    PageRequest pageRequest = new PageRequest(page-1, 30, Sort.Direction.ASC, "uploadedDate");
-                    fileInfoList = fileInfoRepository.findByUploadedDate(targetDate, pageRequest);
-                }
-                break;
+                    break;
+            }
+
+            if(fileInfoList.size() == 0) {
+
+                throw new PasentureException("조회 결과가 없습니다.");
+            }
+        } else {
+
+            PageRequest pageRequest = new PageRequest(page-1, 30, Sort.Direction.ASC, "createdDate");
+            switch (divCode) {
+
+                case "1":
+                    fileInfoPage = fileInfoRepository.findByCreatedDate(targetDate, pageRequest);
+                    break;
+                case "2":
+                    fileInfoPage = fileInfoRepository.findByUploadedDate(targetDate, pageRequest);
+                    break;
+            }
+            fileInfoList = fileInfoPage.getContent();
+            // 마지막 페이지를 넘어섰으면..
+            if(fileInfoList.size() != 0 && page > fileInfoPage.getTotalPages()) {
+
+                throw new PasentureException("마지막 페이지 입니다.");
+            }
+
+            if(fileInfoList.size() == 0) {
+
+                throw new PasentureException("조회 결과가 없습니다.");
+            }
+            response.put("totalCnt", fileInfoPage.getTotalPages());
         }
-        return fileInfoList;
+
+        response.put("list", fileInfoList);
+        return response;
     }
 
-    public List<FileInfo> searchBetweenDates (String startDate, String endDate, String divCode, int page) {
+    public Map<String, Object> searchBetweenDates (String startDate, String endDate, String divCode, int page) throws PasentureException {
 
+        Map<String, Object> response = new HashMap<String, Object>();
         List<FileInfo> fileInfoList = Collections.emptyList();
+        Page<FileInfo> fileInfoPage = null;
 
-        switch (divCode) {
 
-            // 찍은날짜기반
-            case "1":
-                if(page < 0) {
+        if(page <= 0) {
+
+            switch (divCode) {
+                case "1":
                     fileInfoList = fileInfoRepository.findByCreatedDateBetweenOrderByCreatedDateAsc(startDate, endDate);
-                } else {
-                    PageRequest pageRequest = new PageRequest(page-1, 30, Sort.Direction.ASC, "createdDate");
-                    fileInfoList = fileInfoRepository.findByCreatedDateBetween(startDate, endDate, pageRequest);
-                }
-                break;
-
-            // 업데이트날짜기반
-            case "2":
-                if(page < 0) {
+                    break;
+                case "2":
                     fileInfoList = fileInfoRepository.findByUploadedDateBetweenOrderByCreatedDateAsc(startDate, endDate);
-                } else {
-                    PageRequest pageRequest = new PageRequest(page-1, 30, Sort.Direction.ASC, "uploadedDate");
-                    fileInfoList = fileInfoRepository.findByUploadedDateBetween(startDate, endDate, pageRequest);
-                }
-                break;
+                    break;
+            }
+            if(fileInfoList.size() == 0) {
+
+                throw new PasentureException("조회 결과가 없습니다.");
+            }
+
+        } else {
+
+            PageRequest pageRequest = new PageRequest(page-1, 30, Sort.Direction.ASC, "createdDate");
+            switch (divCode) {
+                case "1":
+                    fileInfoPage = fileInfoRepository.findByCreatedDateBetween(startDate, endDate, pageRequest);
+                    break;
+                case "2":
+                    fileInfoPage = fileInfoRepository.findByUploadedDateBetween(startDate, endDate, pageRequest);
+                    break;
+            }
+            fileInfoList = fileInfoPage.getContent();
+
+            // 마지막 페이지를 넘어섰으면..
+            if(fileInfoList.size() != 0 && page > fileInfoPage.getTotalPages()) {
+
+                throw new PasentureException("마지막 페이지 입니다.");
+            }
+
+            if(fileInfoList.size() == 0) {
+
+                throw new PasentureException("조회 결과가 없습니다.");
+            }
+            response.put("totalCnt", fileInfoPage.getTotalPages());
         }
-        return fileInfoList;
+
+        response.put("list", fileInfoList);
+        return response;
     }
 
-    public List<FileInfo> searchLikeAddress (String address) {
+    public Map<String, Object> searchLikeAddress (String address, int page) throws PasentureException {
 
+        Map<String, Object> response = new HashMap<String, Object>();
         List<FileInfo> fileInfoList = Collections.emptyList();
-        fileInfoList = fileInfoRepository.
-                findByRoadAddressContainingOrParcelAddressContainingOrderByCreatedDateAsc(address, address);
-        return fileInfoList;
+        Page<FileInfo> fileInfoPage = null;
+
+
+        if(page <= 0) {
+            fileInfoList = fileInfoRepository.
+                    findByRoadAddressContainingOrParcelAddressContainingOrderByCreatedDateAsc(address, address);
+        } else {
+
+            PageRequest pageRequest = new PageRequest(page-1, 30, Sort.Direction.ASC, "createdDate");
+            fileInfoPage = fileInfoRepository.
+                    findByRoadAddressContainingOrParcelAddressContaining(address, address, pageRequest);
+
+            fileInfoList = fileInfoPage.getContent();
+
+            // 마지막 페이지를 넘어섰으면..
+            if(fileInfoList.size() != 0 && page > fileInfoPage.getTotalPages()) {
+
+                throw new PasentureException("마지막 페이지 입니다.");
+            }
+
+            if(fileInfoList.size() == 0) {
+
+                throw new PasentureException("조회 결과가 없습니다.");
+            }
+            response.put("totalCnt", fileInfoPage.getTotalPages());
+        }
+
+        response.put("list", fileInfoList);
+        return response;
     }
 
     public FileInfo selectOne (String key) {

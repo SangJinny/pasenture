@@ -18,9 +18,7 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by Jeon on 2017-05-08.
@@ -48,41 +46,31 @@ public class ImageApiController {
     }
 
     @RequestMapping(value ="/search/date", method = RequestMethod.GET ,produces = "application/json; charset=utf8")
-    public ResponseEntity<List<FileInfo>> searchByDate(@RequestParam String divCode, @RequestParam String startDate,
+    public ResponseEntity<Map<String, Object>> searchByDate(@RequestParam String divCode, @RequestParam String startDate,
                                  @RequestParam String endDate, @RequestParam String address, @RequestParam int page) throws ParseException, PasentureException {
 
-        List<FileInfo> resultList= Collections.EMPTY_LIST;
+        Map<String, Object> response = null;
 
         // 둘중 하나만 입력됐으면 단일날짜 입력으로 처리.
         if(StringUtils.isEmpty(endDate)) {
 
-            resultList = imageService.searchByDate(startDate, divCode, page);
+            response = imageService.searchByDate(startDate, divCode, page);
         } else if (StringUtils.isEmpty(startDate)) {
 
-            resultList = imageService.searchByDate(endDate, divCode, page);
+            response = imageService.searchByDate(endDate, divCode, page);
         }  else {
 
-            resultList = imageService.searchBetweenDates(startDate, endDate, divCode, page);
+            response = imageService.searchBetweenDates(startDate, endDate, divCode, page);
         }
 
-        if(resultList.size() == 0) {
-
-            throw new PasentureException("조회 결과가 없습니다.");
-        }
-        return new ResponseEntity<List<FileInfo>>(resultList, HttpStatus.OK);
+        return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
     }
 
     @RequestMapping(value = "/search/address", method = RequestMethod.GET, produces = "application/json; charset=utf8")
-    public List<FileInfo> searchByAddress (@RequestParam String address) throws PasentureException {
+    public Map<String, Object>/*List<FileInfo>*/ searchByAddress (@RequestParam String address, @RequestParam int page) throws PasentureException {
 
-        List<FileInfo> resultList= Collections.EMPTY_LIST;
-        resultList = imageService.searchLikeAddress(address);
+        Map<String, Object> response = imageService.searchLikeAddress(address, page);
 
-        if(resultList.size() == 0) {
-
-            throw new PasentureException("조회 결과가 없습니다.");
-        }
-
-        return resultList;
+        return response;
     }
 }
