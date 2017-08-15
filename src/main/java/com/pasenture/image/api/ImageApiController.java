@@ -73,4 +73,12 @@ public class ImageApiController {
 
         return response;
     }
+
+    @RequestMapping(value = "/search/all", method = RequestMethod.GET, produces = "application/json; charset=utf8")
+    public Map<String, Object> searchAll () throws PasentureException {
+
+        Map<String, Object> response = imageService.searchAll();
+
+        return response;
+    }
 }

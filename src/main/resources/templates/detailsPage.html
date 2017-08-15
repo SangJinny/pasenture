@@ -2,6 +2,14 @@
 <html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorator="layout/default">
 <head lang="en">
     <title>Image Details</title>
+    <style type="text/css">
+        #detail-map {
+            margin-top: 10px;
+            margin-bottom: 10px;
+            height: 50vh;
+            max-height: 500px;
+        }
+    </style>
 </head>
 <body>
 <div class="row" layout:fragment="content">
@@ -33,6 +41,11 @@
                     <span th:unless="${FileInfo.memo != ''}">메모정보없음</span>
             </div>
         </div>
+        <div class="map-container s12">
+            <div id="detail-map">
+
+            </div>
+        </div>
         <div class="row col l2 m3 s12 offset-l10 offset-m9 ">
             <form id="download_form">
 
@@ -40,6 +53,10 @@
             </form>
             <button class="btn light-blue lighten-2 waves-effect waves-light col s12" id="download_btn"><span>다운로드</span><i class="material-icons right">file_download</i>
             </button>
+        </div>
+        <div style="display: none">
+            <p id="longitude" th:text="${FileInfo.longitude}"></p>
+            <p id="latitude" th:text="${FileInfo.latitude}"></p>
         </div>
     </div>
     <script type="text/javascript">
@@ -52,9 +69,36 @@
                 $('#key').val(fileKey);
                 $('#download_form').attr({action:url, method:'GET'}).submit();
 
-            })
-        })
+            });
+
+
+            initGoogleMap();
+        });
+
+
+        function initGoogleMap() {
+            var longitude = parseFloat($("#longitude").text());
+            var latitude = parseFloat($("#latitude").text());
+            var address = $("#parcelAddress").text();
+            var gpsPos = {lat: latitude, lng: longitude};
+
+            var mapOptions = {
+                center: gpsPos,
+                scrollwheel: true,
+                zoom: 14
+            };
+
+            var map = new google.maps.Map(document.getElementById('detail-map'), mapOptions);
+
+            var marker = new google.maps.Marker({
+                map: map,
+                position: gpsPos,
+                title: address
+            });
+
+        }
     </script>
+
 </div>
 </body>
 </html>

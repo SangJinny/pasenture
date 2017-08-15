@@ -36,11 +36,16 @@ public class ImageController {
     }
 
     @RequestMapping(value="/search", method = RequestMethod.GET)
-    public String searchPage() throws IOException {
+    public String searchPage() {
 
         return "searchPage";
     }
 
+    @RequestMapping(value="/map", method = RequestMethod.GET)
+    public String mapPage() {
+
+        return "mapPage";
+    }
     @RequestMapping(value = "/uploadedImage/{key}", method = RequestMethod.GET)
     public void inquireImage(HttpServletResponse response, @PathVariable String key) throws PasentureException {
 

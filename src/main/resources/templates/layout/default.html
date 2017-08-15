@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!--<![CDATA[-->
 <html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
 <head>
     <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
@@ -9,7 +10,7 @@
     <link href="http://fonts.googleapis.com/earlyaccess/notosanskr.css" rel="stylesheet" type="text/css" />
     <link href="https://cdn.rawgit.com/YJSoft/Webfonts/0.1/BM_JUA.css" rel="stylesheet" type="text/css" />
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
-
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAlHfZwvC9OdUOyDF-j30avbbDgXArrSX0"></script>
     <script src="webjars/jquery/2.1.4/jquery.js"></script>
     <script src="webjars/materializecss/0.96.0/js/materialize.js"></script>
     <style type="text/css">
@@ -267,6 +268,11 @@
             margin-right: auto;
         }
 
+        #loadingImage {
+            text-align: center;
+            margin-top: 12%;
+        }
+
     </style>
 </head>
 
@@ -276,7 +282,7 @@
     <li class="divider"></li>
     <li id="searchPage"><a href="/search" class="indigo-text">사진보기</a></li>
     <li class="divider"></li>
-    <li id="mapPage"><a href="#" class="indigo-text">지도로보기(준비중)</a></li>
+    <li id="mapPage"><a href="/map" class="indigo-text">지도로보기</a></li>
     <li class="divider"></li>
     <li id="aiPage"><a href="#" class="indigo-text">AI연구소(준비중)</a></li>
 </ui>
@@ -322,12 +328,14 @@
             alert("임시로 중단된 기능입니다.");
         });
         $('#mapPage').on('click',function () {
-            alert("준비중입니다.");
+            //alert("준비중입니다.");
         });
         $('#aiPage').on('click',function () {
             alert("준비중입니다.");
         })
     })
 </script>
+
 </body>
 </html>
+<!--]>-->

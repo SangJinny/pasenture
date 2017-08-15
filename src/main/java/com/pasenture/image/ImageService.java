@@ -343,6 +343,17 @@ public class ImageService {
         return fileInfoRepository.getOne(key);
     }
 
+    public Map<String, Object> searchAll() {
+        Map<String, Object> response = new HashMap<String, Object>();
+        List<FileInfo> fileInfoList = Collections.emptyList();
+
+        fileInfoList = fileInfoRepository.findAll();
+        response.put("list", fileInfoList);
+        response.put("totalCnt", fileInfoList.size());
+
+        return response;
+    }
+
     private FileInfo extractFileInfo (File file) throws PasentureException {
 
         FileInfo fileinfo = new FileInfo(file.getName());
