@@ -92,8 +92,8 @@ public class ImageService {
                 File file = commonFunction.getFileFromMultipartFile(multipartFile);
                 FileInfo tempFileInfo = uploadOnRDS(file);
                 File thumbnailFile = commonFunction.getThumbnailFromFile(file, 300);
-                uploadOnS3(tempFileInfo.getFileKey()+".jpg", file);
-                uploadOnS3(tempFileInfo.getThumbnailKey()+".jpg",thumbnailFile);
+                uploadOnS3(tempFileInfo.getFileKey(), file);
+                uploadOnS3(tempFileInfo.getThumbnailKey(),thumbnailFile);
             }
         }
     }
@@ -177,11 +177,12 @@ public class ImageService {
     }
 
     // InputStream의 파일을 HttpResponse에 넣음 (조회)
-    public void inquireFile (String fileName, HttpServletResponse response) throws PasentureException {
+    public void inquireFile (String key, HttpServletResponse response) throws PasentureException {
 
         InputStream inputStream = null;
+
         try {
-            inputStream = getStreamOnS3(fileName);
+            inputStream = getStreamOnS3(key);
             IOUtils.copy(inputStream, response.getOutputStream());
         } catch (IOException e) {
             e.printStackTrace();

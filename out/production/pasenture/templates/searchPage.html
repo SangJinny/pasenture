@@ -70,9 +70,7 @@
 
 
     </div>
-    <div style="display: none">
-        <input id="clickedDivID" type="text"/>
-    </div>
+
     <div id="pageInfo" class="col s12" style="display:none;">
         <span>총</span>
         <span id="totalPageNum" style="font-weight:bold;font-size: 20px;"></span>
@@ -82,8 +80,8 @@
     </div>
 
     <div class="col s12 m3 l2 xl1 offset-m9 offset-l10">
-        <button id="top-button" class="btn light-blue lighten-2 waves-effect waves-light col s12" style="display:none;">
-            맨위로 이동<i class="large material-icons left"><i class="material-icons">vertical_align_top</i></i>
+        <button id="entire-button" class="btn light-blue lighten-2 waves-effect waves-light col s12" style="display:none;">
+            전체보기<i class="material-icons right">search</i>
         </button>
     </div>
 
@@ -91,7 +89,6 @@
 
     <script type="text/javascript">
         //<![CDATA[
-
         $(document).ready(function() {
 
             $("#searchForm").on("submit", requestFileInfoList);
@@ -158,21 +155,6 @@
                 $('#requestPageNum').val(-1);
                 $("#searchForm").trigger('submit');
             });
-
-            $('#top-button').on('click', function () {
-
-                $("body").scrollTop(0);
-            });
-
-
-            // 컨텐츠 클릭 후 뒤로가기를 눌렀을 때의 처리
-            var target = $('#clickedDivID').val().toString();
-            if(target != undefined && target != "") {
-
-                $("#searchForm").trigger('submit');
-                var offset = document.getElementById(target).offset();
-                $('html, body').animate({scrollTop : offset.top}, 400);
-            }
         });
 
 
@@ -189,12 +171,11 @@
             $('#pageInfo').attr('style','display:none;');
             $('#prev-button').attr("style","display:none;");
             $('#next-button').attr("style","display:none;");
-            $('#top-button').attr("style","display:none;");
 
             var requestPageNumValue = parseInt($('#requestPageNum').val());
 
             // 콤보박스 세팅.
-            var divCode = $('.browser-default').val().toString();
+            var divCode = $('.browser-default').val();
             $("#divCode").val(divCode);
 
             var url = '';
@@ -214,9 +195,6 @@
                         return false;
                     }
                     break;
-                default:
-                    alert("거래 처리 도중 오류가 발생했습니다.");
-                    return;
             }
 
             var data = $(this).serialize();
@@ -274,7 +252,6 @@
                 // 클릭이벤트 연결.
                 newDiv.click(function () {
 
-                    $('#clickedDivID').val($(this).attr('id'));
                     location.href="/details?key="+$(this).attr('id');
                 });
 
@@ -301,8 +278,6 @@
                 $('#pageInfo').attr('style','display:none;');
                 $('#prev-button').attr("style","display:none;");
                 $('#next-button').attr("style","display:none;");
-                // 맨위로 가는 버튼은 보여줌.
-                $('#top-button').attr("style","display:inline-block;");
             } else {
 
                 // 전체보기, 페이징화살표, 페이지정보 보여주기.
@@ -310,7 +285,6 @@
                 $('#pageInfo').attr("style","display:inline-block;");
                 $('#next-button').attr('style','display:inline-block');
                 $('#prev-button').attr('style','display:inline-block');
-                $('#top-button').attr("style","display:inline-block;");
             }
         }
 

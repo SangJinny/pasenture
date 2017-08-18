@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorator="layout/default">
+<head lang="en">
+    <title>Result On Map</title>
+    <style type="text/css">
+        #main-map {
+            margin-top: 10px;
+            margin-bottom: 10px;
+            height: 70vh;
+            max-height: 800px;
+        }
+    </style>
+</head>
+<body>
+<div class="row" layout:fragment="content">
+    <h2 class="indigo-text center">지도로 보기</h2>
+    <div class="row col l8 m10 s12 offset-l2 offset-m1">
+        <div class="map-container s12" >
+            <div id="main-map" style="display:none">
+
+            </div>
+        </div>
+        <div class="col s12" id="loadingImage" style="display:inline-block">
+            <div class="preloader-wrapper big active" style="width:200px; height:200px;">
+                <div class="spinner-layer spinner-blue-only">
+                    <div class="circle-clipper left">
+                        <div class="circle"></div>
+                    </div><div class="gap-patch">
+                    <div class="circle"></div>
+                </div><div class="circle-clipper right">
+                    <div class="circle"></div>
+                </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript">//<![CDATA[
+    $('document').ready(function () {
+
+        $.ajax({
+            url: '/api/image/search/all',
+            type:"GET",
+            contentType:"application/json;charset=UTF-8",
+            success:function (response) {
+
+                console.log(response.list);
+                console.log(response.totalCnt);
+                handlingResultJson(response.list);
+                // 로딩 이미지 숨김
+                $('#loadingImage').attr("style","display:none;");
+            },
+            error:function (data, status) {
+
+                alert(data.responseText);
+                // 로딩 이미지 숨김
+                $('#loadingImage').attr("style","display:none;");
+            },
+            StatusCode: {
+
+                500:function(data) {
+
+                    alert(data.responseText);
+                    // 로딩 이미지 숨김
+                    $('#loadingImage').attr("style","display:none;");
+                }
+            }
+        });
+    });
+    function handlingResultJson(response) {
+
+        $("body").scrollTop(0);
+
+        var responseJson = $.parseJSON(JSON.stringify(response));
+        var length = responseJson.length;
+
+        var centerPos = {lat: 37.566735, lng: 126.978119}; // 서울시청
+
+        var mapOptions = {
+            center: centerPos,
+            scrollwheel: true,
+            zoom: 11
+        };
+
+        var map = new google.maps.Map(document.getElementById('main-map'), mapOptions);
+        var locations = [];
+        responseJson.forEach(function (fileInfo) {
+
+            if(parseFloat(fileInfo.latitude) != 0.0 || parseFloat(fileInfo.longitude) !=0.0) {
+
+                var gpsPos = {lat: parseFloat(fileInfo.latitude), lng: parseFloat(fileInfo.longitude)};
+                /*var marker = new google.maps.Marker({
+                    map: map,
+                    position: gpsPos,
+                    title: fileInfo.address
+                });*/
+                locations.push(gpsPos);
+            }
+        });
+
+        // Create an array of alphabetical characters used to label the markers.
+        var labels = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+        // Add some markers to the map.
+        // Note: The code uses the JavaScript Array.prototype.map() method to
+        // create an array of markers based on a given "locations" array.
+        // The map() method here has nothing to do with the Google Maps API.
+        var markers = locations.map(function(location, i) {
+            return new google.maps.Marker({
+                position: location,
+                //label: labels[i % labels.length]
+            });
+        });
+
+        // Add a marker clusterer to manage the markers.
+        var markerCluster = new MarkerClusterer(map, markers,
+            {imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m'});
+
+
+        // 지도 보임
+        $('#main-map').attr('style','display:block');
+    }
+
+
+    //]]></script>
+    <script src="https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/markerclusterer.js">
+    </script>
+</div>
+</body>
+</html>
