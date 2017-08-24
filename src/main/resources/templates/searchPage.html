@@ -29,8 +29,9 @@
                     <option value="1">찍은날짜</option>
                     <option value="2">업로드날짜</option>
                     <option value="3">찍은장소</option>
+                    <option value="4" style="display:none">좌표</option>
                 </select>
-                <input style="display: none" type="text" name="divCode" id="divCode"/>
+                <input style="display: none" type="text" name="divCode" id="divCode" th:value="${params.divCode}"/>
             </div>
             <div class="input-field col s6 m4" id="startDateInput">
                 <input type="date" name="startDate" class="validate"/>
@@ -43,6 +44,12 @@
             </div>
             <div class="input_field col s12"  style="display:none;">
                 <input type="text" id="requestPageNum" name="page" value="1"/>
+            </div>
+            <div class="input_field col s12" style="display:none;">
+                <input type="text" id="maxLat" name="maxLat" th:value="${params.maxLat}"/>
+                <input type="text" id="minLat" name="minLat" th:value="${params.minLat}"/>
+                <input type="text" id="maxLng" name="maxLng" th:value="${params.maxLng}"/>
+                <input type="text" id="minLng" name="minLng" th:value="${params.minLng}"/>
             </div>
             <div class="input-field col s12 m2">
                 <button id="submit-button" class="btn light-blue lighten-2 waves-effect waves-light col s12" style="margin-top: 10px;">
@@ -66,7 +73,7 @@
 
         </form>
     </div>
-    <div id="contents">
+    <div class="col s12" id="contents">
 
 
     </div>
@@ -95,6 +102,12 @@
         $(document).ready(function() {
 
             $("#searchForm").on("submit", requestFileInfoList);
+
+            if($('#divCode').val() == "4") {
+                $('#searchForm').attr('style','display:none');
+                $('.browser-default').val("4");
+                $("#searchForm").trigger('submit');
+            }
 
             $('select').material_select();
             $('select').on('change', function () {
@@ -194,11 +207,11 @@
             var requestPageNumValue = parseInt($('#requestPageNum').val());
 
             // 콤보박스 세팅.
-            var divCode = $('.browser-default').val().toString();
-            $("#divCode").val(divCode);
+            var comboVal = $('.browser-default').val().toString();
+
 
             var url = '';
-            switch (divCode) {
+            switch (comboVal) {
                 case '1':
                 case '2':
                     url = "/api/image/search/date";
@@ -208,17 +221,21 @@
 
                     // 주소 전송시, 두글자 이상인지 검증
                     var addrValLen = $('#addressInput').children().val().length;
-                    if(divCode == '3' && addrValLen < 2) {
+                    if(comboVal == '3' && addrValLen < 2) {
 
                         alert("두글자 이상 입력하세요.");
                         return false;
                     }
+                    break;
+                case '4':
+                    url = "/api/image/search/position";
                     break;
                 default:
                     alert("거래 처리 도중 오류가 발생했습니다.");
                     return;
             }
 
+            $("#divCode").val(comboVal);
             var data = $(this).serialize();
 
             $.ajax({
@@ -287,7 +304,7 @@
                 index++;
 
             });
-            resizeContainers();
+
 
             // 로딩 이미지 숨김
             $('#loadingImage').attr("style","display:none;");
@@ -312,6 +329,9 @@
                 $('#prev-button').attr('style','display:inline-block');
                 $('#top-button').attr("style","display:inline-block;");
             }
+
+            resizeContainers();
+
         }
 
         function resizeContainers() {

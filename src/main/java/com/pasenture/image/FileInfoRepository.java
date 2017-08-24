@@ -39,5 +39,9 @@ public interface FileInfoRepository extends JpaRepository<FileInfo, String>, Jpa
 
    public List<FileInfo> findByRoadAddressContainingOrParcelAddressContainingOrderByCreatedDateAsc (String address1, String address2);
 
-   public Page<FileInfo> findByRoadAddressContainingOrParcelAddressContaining (String address1, String address2, Pageable pageable);
+   public Page<FileInfo> findByRoadAddressContainingOrParcelAddressContainingOrderByCreatedDateAsc (String address1, String address2, Pageable pageable);
+
+   public List<FileInfo> findByLatitudeBetweenAndLongitudeBetweenOrderByCreatedDateAsc(double minLatitude, double maxLatitude, double minLongitude, double maxLongitude);
+
+   public Page<FileInfo> findByLatitudeBetweenAndLongitudeBetweenOrderByCreatedDateAsc(double minLatitude, double maxLatitude, double minLongitude, double maxLongitude, Pageable pageable);
 }

@@ -45,13 +45,35 @@ public class ImageApiController {
         return imageService.downloadFile(key);
     }
 
-    @RequestMapping(value ="/search/date", method = RequestMethod.GET ,produces = "application/json; charset=utf8")
-    public ResponseEntity<Map<String, Object>> searchByDate(@RequestParam String divCode, @RequestParam String startDate,
-                                 @RequestParam String endDate, @RequestParam String address, @RequestParam int page) throws ParseException, PasentureException {
+    @RequestMapping(value ="/search/position", method = RequestMethod.GET, produces = "application/json; charset=utf8")
+    public ResponseEntity<Map<String, Object>> search(@RequestParam Map<String, String> params) throws PasentureException {
 
         Map<String, Object> response = null;
 
-        // 둘중 하나만 입력됐으면 단일날짜 입력으로 처리.
+        double minLat = Double.valueOf(params.get("minLat"));
+        double maxLat = Double.valueOf(params.get("maxLat"));
+        double minLng = Double.valueOf(params.get("minLng"));
+        double maxLng = Double.valueOf(params.get("maxLng"));
+        String divCode = params.get("divCode");
+        int page = Integer.valueOf(params.get("page"));
+
+
+        response = imageService.searchByMaxMinPosition(minLat, maxLat, minLng, maxLng, page);
+
+        return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
+    }
+
+    @RequestMapping(value ="/search/date", method = RequestMethod.GET ,produces = "application/json; charset=utf8")
+    public ResponseEntity<Map<String, Object>> searchByDate(@RequestParam Map<String, String> params/*, @RequestParam String divCode, @RequestParam String startDate,
+                                 @RequestParam String endDate, @RequestParam String address, @RequestParam int page*/) throws ParseException, PasentureException {
+
+        Map<String, Object> response = null;
+
+        String startDate = params.get("startDate");
+        String endDate = params.get("endDate");
+        String divCode = params.get("divCode");
+        int page = Integer.valueOf(params.get("page"));
+
         if(StringUtils.isEmpty(endDate)) {
 
             response = imageService.searchByDate(startDate, divCode, page);

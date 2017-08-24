@@ -113,7 +113,7 @@
                 });
                 google.maps.event.addListener(marker, 'click', function () {
 
-                    alert(this.getTitle());
+                    location.href="/details?key="+this.getTitle();
                 });
                 markers.push(marker);
             }
@@ -145,17 +145,43 @@
         var markerCluster = new MarkerClusterer(map, markers, {
             gridSize: 25,
             styles: iconInfo,
+            zoonOnClick: false,
             imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m'
         });
 
         google.maps.event.addListener(markerCluster, 'clusterclick', function (cluster) {
 
-            var markers = cluster.getMarkers();
-            console.log(markers);
-            for(var i = 0 ; i < markers.length; i++) {
-                alert(markers[i].getTitle()+" "+markers[i].getPosition().lat()+" "+markers[i].getPosition().lng());
 
+            var markers = cluster.getMarkers();
+            var minLat = 360.0;
+            var minLng = 360.0;
+            var maxLat = -360.0;
+            var maxLng = -360.0;
+
+            for(var i = 0 ; i < markers.length; i++) {
+                //alert(markers[i].getTitle()+" "+markers[i].getPosition().lat()+" "+markers[i].getPosition().lng());
+
+                var targetLat = markers[i].getPosition().lat();
+                var targetLng = markers[i].getPosition().lng();
+
+                if(maxLat < targetLat) {
+                    maxLat = targetLat;
+                }
+
+                if(targetLat < minLat) {
+                    minLat = targetLat;
+                }
+
+                if(maxLng < targetLng) {
+                    maxLng = targetLng;
+                }
+
+                if(targetLng < minLng) {
+                    minLng = targetLng;
+                }
             }
+
+            location.href="/search?maxLat="+maxLat+"&minLat="+minLat+"&maxLng="+maxLng+"&minLng="+minLng+"&divCode=4";
         });
 
 

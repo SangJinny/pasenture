@@ -108,9 +108,9 @@ public class CommonFunction {
             BufferedImage bufferedImage = ImageIO.read(file);
             int height = bufferedImage.getHeight();
             int width = bufferedImage.getWidth();
-            double rate = (double) thumnailWidth/ width;
+            double rate = (double) thumnailWidth / (double)width;
 
-            int thumnailHeight = (int)(height * rate);
+            int thumnailHeight = (int)((double)height * (double)rate);
             thumbnail.createNewFile();
             FileOutputStream fos = new FileOutputStream(thumbnail);
             Thumbnails.of(file).size(thumnailWidth, thumnailHeight).outputFormat("jpg").toOutputStream(fos);

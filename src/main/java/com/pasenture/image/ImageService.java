@@ -117,7 +117,7 @@ public class ImageService {
         });
 
         Upload upload = transferManager.upload(request);
-        try {
+        /*try {
             // You can block and wait for the upload to finish
             upload.waitForCompletion();
         } catch (AmazonClientException amazonClientException) {
@@ -126,7 +126,7 @@ public class ImageService {
         } catch (InterruptedException e) {
             e.printStackTrace();
             throw new PasentureException("이미지 서버 접속 도중 오류가 발생했습니다.");
-        }
+        }*/
     }
 
     // S3에서 파일이 들어있는 InputStream 가져옴
@@ -318,7 +318,48 @@ public class ImageService {
 
             PageRequest pageRequest = new PageRequest(page-1, 30, Sort.Direction.ASC, "createdDate");
             fileInfoPage = fileInfoRepository.
-                    findByRoadAddressContainingOrParcelAddressContaining(address, address, pageRequest);
+                    findByRoadAddressContainingOrParcelAddressContainingOrderByCreatedDateAsc(address, address, pageRequest);
+
+            fileInfoList = fileInfoPage.getContent();
+
+            // 마지막 페이지를 넘어섰으면..
+            if(fileInfoList.size() != 0 && page > fileInfoPage.getTotalPages()) {
+
+                throw new PasentureException("마지막 페이지 입니다.");
+            }
+
+            if(fileInfoList.size() == 0) {
+
+                throw new PasentureException("조회 결과가 없습니다.");
+            }
+            response.put("totalCnt", fileInfoPage.getTotalPages());
+        }
+
+        response.put("list", fileInfoList);
+        return response;
+    }
+
+    public Map<String, Object> searchByMaxMinPosition(double minLat, double maxLat, double minLng, double maxLng, int page) throws PasentureException {
+
+        Map<String, Object> response = new HashMap<String, Object>();
+        List<FileInfo> fileInfoList = Collections.emptyList();
+        Page<FileInfo> fileInfoPage = null;
+
+        System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@");
+        System.out.println(minLat);
+        System.out.println(maxLat);
+        System.out.println(minLng);
+        System.out.println(maxLng);
+        System.out.println(page);
+
+        if(page <= 0) {
+            fileInfoList = fileInfoRepository.
+                    findByLatitudeBetweenAndLongitudeBetweenOrderByCreatedDateAsc(minLat, maxLat, minLng, maxLng );
+        } else {
+
+            PageRequest pageRequest = new PageRequest(page-1, 30, Sort.Direction.ASC, "createdDate");
+            fileInfoPage = fileInfoRepository.
+                    findByLatitudeBetweenAndLongitudeBetweenOrderByCreatedDateAsc(minLat, maxLat, minLng, maxLng, pageRequest);
 
             fileInfoList = fileInfoPage.getContent();
 
