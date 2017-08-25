@@ -133,7 +133,7 @@
             $('#submit-button').on("click", function () {
 
                 $('#requestPageNum').val(1);
-                $("#searchForm").trigger('submit');
+                //$("#searchForm").trigger('submit');
             });
 
             $('#next-button').on('click', function () {
@@ -144,7 +144,8 @@
                     $('#requestPageNum').val(requestPageNumValue+1);
                 } else {
 
-                    alert("마지막 페이지 입니다.");
+                    //alert("마지막 페이지 입니다.");
+                    Materialize.toast('마지막 페이지 입니다', 4000);
                     return;
                 }
                 $("#searchForm").trigger('submit');
@@ -158,7 +159,8 @@
                     requestPageNumValue--;
                 } else if(requestPageNumValue >= 0) {
 
-                    alert("첫 페이지 입니다.");
+                    //alert("첫 페이지 입니다.");
+                    Materialize.toast('첫 페이지 입니다', 4000);
                     return;
                 }
 
@@ -223,7 +225,8 @@
                     var addrValLen = $('#addressInput').children().val().length;
                     if(comboVal == '3' && addrValLen < 2) {
 
-                        alert("두글자 이상 입력하세요.");
+                        //alert("두글자 이상 입력하세요.");
+                        Materialize.toast('마지막 페이지 입니다', 4000);
                         return false;
                     }
                     break;
@@ -231,7 +234,8 @@
                     url = "/api/image/search/position";
                     break;
                 default:
-                    alert("거래 처리 도중 오류가 발생했습니다.");
+                    //alert("거래 처리 도중 오류가 발생했습니다.");
+                    Materialize.toast('콤보박스 처리 도중 오류가 발생했습니다.', 4000);
                     return;
             }
 
@@ -254,7 +258,8 @@
                 },
                 error:function (data, status) {
 
-                    alert(data.responseText);
+                    //alert(data.responseText);
+                    Materialize.toast(data.responseText, 4000);
                     // 로딩 이미지 숨김
                     $('#loadingImage').attr("style","display:none;");
                 },
@@ -262,7 +267,8 @@
 
                     500:function(data) {
 
-                        alert(data.responseText);
+                        //alert(data.responseText);
+                        Materialize.toast(data.responseText, 4000);
                         // 로딩 이미지 숨김
                         $('#loadingImage').attr("style","display:none;");
                     }

@@ -60,6 +60,7 @@ dependencies {
 	compile('org.springframework.boot:spring-boot-starter-web')
 	compile('org.springframework.boot:spring-boot-starter-thymeleaf') // thymeleaf 의존성 추가
 	compile('org.springframework.boot:spring-boot-starter-data-jpa')
+	compile('org.springframework.boot:spring-boot-starter-security')
 	//compile('org.springframework.data.web.config.SpringDataJacksonModules')
 	compile('org.springframework:springloaded:1.2.6.RELEASE')
 	compile("org.springframework.cloud:spring-cloud-aws-jdbc:${springCloudVersion}")

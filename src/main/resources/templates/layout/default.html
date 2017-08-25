@@ -264,7 +264,8 @@
         }
         .meta-info-container {
             border:1px solid rgba(0,0,0,0.2);
-            padding:3px;
+            padding-right:3px;
+            padding-left: 3px;
             /*margin-top:10px;*/
         }
         .meta-info-container i {
@@ -286,8 +287,6 @@
 
 <body>
 <ui id="menu-dropdown" class="dropdown-content" style="width:100px">
-    <li id="uploadPage"><a href="#" class="indigo-text">업로드</a></li>
-    <li class="divider"></li>
     <li id="searchPage"><a href="/search" class="indigo-text">사진보기</a></li>
     <li class="divider"></li>
     <li id="mapPage"><a href="/map" class="indigo-text">지도로보기</a></li>
@@ -335,9 +334,6 @@
         }
     );
     $(document).ready(function () {
-        $('#uploadPage').on('click',function () {
-            alert("임시로 중단된 기능입니다.");
-        });
         $('#mapPage').on('click',function () {
             //alert("준비중입니다.");
         });

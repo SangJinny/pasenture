@@ -35,6 +35,13 @@
         </div>
     </div>
     <script type="text/javascript">//<![CDATA[
+
+    $(window).bind("pageshow", function(event) {
+        if (event.originalEvent.persisted) {
+            window.location.reload()
+        }
+    });
+
     $('document').ready(function () {
 
         $.ajax({
@@ -51,7 +58,8 @@
             },
             error:function (data, status) {
 
-                alert(data.responseText);
+                //alert(data.responseText);
+                Materialize.toast(data.responseText, 4000);
                 // 로딩 이미지 숨김
                 $('#loadingImage').attr("style","display:none;");
             },
@@ -59,7 +67,8 @@
 
                 500:function(data) {
 
-                    alert(data.responseText);
+                    //alert(data.responseText);
+                    Materialize.toast(data.responseText, 4000);
                     // 로딩 이미지 숨김
                     $('#loadingImage').attr("style","display:none;");
                 }
